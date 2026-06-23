@@ -324,3 +324,11 @@ export async function getPrestamosComoInversionista(inversionistaId: string) {
   
   return data || [];
 }
+export async function cerrarSesion() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  await supabase.auth.signOut();
+  revalidatePath("/"); // Refresca la app para ir al login
+}
