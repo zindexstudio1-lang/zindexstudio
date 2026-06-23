@@ -10,3 +10,14 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+@layer utilities {
+  /* Ocultar scrollbar en Chrome, Safari y Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Ocultar scrollbar en Firefox, IE y Edge */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

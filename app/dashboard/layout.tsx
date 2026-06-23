@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { cerrarSesion } from "@/app/actions/prestamos";
 
 // Íconos SVG
 const HomeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>;
@@ -20,7 +19,7 @@ export default function DashboardLayout({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
-  // Nuevo estado para guardar los datos reales del usuario
+  // Estado para guardar los datos reales del usuario
   const [userData, setUserData] = useState({ email: "Cargando...", role: "..." });
 
   // Función que se ejecuta al cargar la página para buscar en Supabase
@@ -82,7 +81,7 @@ export default function DashboardLayout({
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
           <Link href="/dashboard" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium transition-colors">
             <HomeIcon /> Dashboard
           </Link>
@@ -101,7 +100,8 @@ export default function DashboardLayout({
 
           <Link
             href="/dashboard/inversionista" 
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
+            onClick={() => setIsSidebarOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
           >
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
@@ -116,24 +116,12 @@ export default function DashboardLayout({
           <Link href="/dashboard/bots" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors font-medium">
             <BotIcon /> Automatizaciones (RPA)
           </Link>
-        </nav>
+        </nav>        
 
-        <button 
-  onClick={async () => {
-    await cerrarSesion();
-    window.location.href = "/"; // Fuerza la redirección al login
-  }}
-  className="mt-auto flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/10 transition-colors w-full"
->
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M18 12l3-3m0 0l-3-3m3 3H9" />
-  </svg>
-  Cerrar Sesión
-</button>
-        
-
-        {/* Módulo de Perfil Actualizado */}
-        <div className="p-4 border-t border-zinc-800/80 bg-zinc-900/20">
+        {/* PERFIL DE USUARIO Y BOTÓN DE SALIDA (FUSIONADO) */}
+        <div className="p-4 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/20 mt-auto">
+          
+          {/* Datos del usuario */}
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow-lg uppercase">
               {userData.email.charAt(0)}
@@ -142,15 +130,31 @@ export default function DashboardLayout({
               <span className="text-sm font-medium text-white truncate w-full" title={userData.email}>
                 {userData.email.split('@')[0]}
               </span>
-              <span className={`text-xs mt-1 font-medium ${userData.role === 'super_admin' ? 'text-indigo-400' : 'text-zinc-500'}`}>
-                {userData.role}
+              <span className={`text-xs mt-0.5 font-medium ${userData.role === 'super_admin' ? 'text-indigo-400' : 'text-zinc-500'}`}>
+                {userData.role.replace('_', ' ')}
               </span>
             </div>
           </div>
+
+          {/* Botón de Cerrar Sesión (Solo Ícono Puertita) */}
+          <button 
+            onClick={async () => {
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              window.location.href = "/";
+            }}
+            title="Cerrar Sesión"
+            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+            </svg>
+          </button>
         </div>
+
       </aside>
 
-      <main className="flex-1 flex flex-col h-full relative overflow-y-auto w-full">
+      <main className="flex-1 flex flex-col h-full relative overflow-y-auto no-scrollbar w-full">
         <div className="md:pt-0 pt-16 h-full">
           {children}
         </div>

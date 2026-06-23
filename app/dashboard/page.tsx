@@ -134,7 +134,7 @@ export default function DashboardPage() {
               <svg className="w-5 h-5 text-zinc-600 group-hover:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
             </Link>
 
-            <Link href="/dashboard/inversionistas" className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group">
+            <Link href="/dashboard/inversionista" className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/80 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group">
               <div className="flex items-center gap-4">
                 <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
