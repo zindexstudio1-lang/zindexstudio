@@ -463,12 +463,12 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* VISOR DE CRONOGRAMA */}
+{/* VISOR DE CRONOGRAMA */}
       {isCuotasModalOpen && selectedPrestamo && !isPagoModalOpen && !isEditPagoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCuotasModalOpen(false)}></div>
           <div className="relative z-10 w-full max-w-4xl bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="p-5 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between">
+            <div className="p-5 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between flex-shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-white">Cronograma de Pagos</h2>
                 <p className="text-sm text-zinc-400 mt-0.5">Cliente: <span className="text-indigo-400 font-medium">{selectedPrestamo.clientes?.nombre}</span></p>
@@ -476,34 +476,35 @@ export default function FinanzasPage() {
               <button onClick={() => setIsCuotasModalOpen(false)} className="p-2 text-zinc-400 hover:text-white bg-zinc-800/50 rounded-lg transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             
-            <div className="p-0 overflow-y-auto flex-1 bg-zinc-900/50">
+            {/* AQUÍ ESTÁ LA MAGIA DEL SCROLL: overflow-x-auto */}
+            <div className="p-0 overflow-y-auto overflow-x-auto flex-1 bg-zinc-900/50 no-scrollbar">
               <table className="w-full text-sm text-zinc-400">
                 <thead className="text-xs uppercase bg-zinc-950 text-zinc-500 sticky top-0 border-b border-zinc-800 z-10">
                   <tr>
-                    <th className="px-6 py-4 font-semibold text-center">N°</th>
-                    <th className="px-6 py-4 font-semibold text-right">Amortización</th>
-                    <th className="px-6 py-4 font-semibold text-right">Interés</th>
-                    <th className="px-6 py-4 font-semibold text-right">Cuota Total</th>
-                    <th className="px-6 py-4 font-semibold text-center">Vencimiento</th>
-                    <th className="px-6 py-4 font-semibold text-center">Estado</th>
-                    <th className="px-6 py-4 font-semibold text-center">Acción</th>
+                    <th className="px-6 py-4 font-semibold text-center whitespace-nowrap">N°</th>
+                    <th className="px-6 py-4 font-semibold text-right whitespace-nowrap">Amortización</th>
+                    <th className="px-6 py-4 font-semibold text-right whitespace-nowrap">Interés</th>
+                    <th className="px-6 py-4 font-semibold text-right whitespace-nowrap">Cuota Total</th>
+                    <th className="px-6 py-4 font-semibold text-center whitespace-nowrap">Vencimiento</th>
+                    <th className="px-6 py-4 font-semibold text-center whitespace-nowrap">Estado</th>
+                    <th className="px-6 py-4 font-semibold text-center whitespace-nowrap">Acción</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/80">
                   {isLoadingCuotas ? (
-                    <tr><td colSpan={7} className="px-6 py-12 text-center">Cargando cronograma matemático...</td></tr>
+                    <tr><td colSpan={7} className="px-6 py-12 text-center whitespace-nowrap">Cargando cronograma matemático...</td></tr>
                   ) : cuotasList.length === 0 ? (
-                    <tr><td colSpan={7} className="px-6 py-12 text-center">No hay cuotas registradas.</td></tr>
+                    <tr><td colSpan={7} className="px-6 py-12 text-center whitespace-nowrap">No hay cuotas registradas.</td></tr>
                   ) : (
                     cuotasList.map((cuota) => (
                       <tr key={cuota.id} className="hover:bg-zinc-800/40 transition-colors">
-                        <td className="px-6 py-4 text-center font-medium text-white">{cuota.numero_cuota}</td>
-                        <td className="px-6 py-4 text-right">S/ {cuota.amortizacion_capital.toFixed(2)}</td>
-                        <td className="px-6 py-4 text-right">S/ {cuota.interes.toFixed(2)}</td>
-                        <td className="px-6 py-4 text-right font-bold text-emerald-400">S/ {cuota.monto_total.toFixed(2)}</td>
-                        <td className="px-6 py-4 text-center text-zinc-300">{new Date(cuota.fecha_vencimiento + 'T12:00:00Z').toLocaleDateString('es-ES')} </td>
+                        <td className="px-6 py-4 text-center font-medium text-white whitespace-nowrap">{cuota.numero_cuota}</td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">S/ {cuota.amortizacion_capital.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">S/ {cuota.interes.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-right font-bold text-emerald-400 whitespace-nowrap">S/ {cuota.monto_total.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-center text-zinc-300 whitespace-nowrap">{new Date(cuota.fecha_vencimiento + 'T12:00:00Z').toLocaleDateString('es-ES')} </td>
                         
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 text-center whitespace-nowrap">
                           {cuota.estado === 'pendiente' ? (
                             <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium border bg-amber-500/10 text-amber-400 border-amber-500/20">Pendiente</span>
                           ) : cuota.tipo_pago === 'solo_interes' ? (
@@ -515,37 +516,37 @@ export default function FinanzasPage() {
                           )}
                         </td>
 
-                        <td className="px-6 py-4 text-center">
-  {cuota.estado === 'pendiente' ? (
-    <div className="flex items-center justify-center gap-2">
-      {/* NUEVO BOTÓN DE WHATSAPP */}
-      <button 
-        onClick={() => generarMensajeWhatsApp(selectedPrestamo.clientes?.nombre, selectedPrestamo.clientes?.telefono, cuota)}
-        title="Enviar recordatorio por WhatsApp"
-        className="p-1.5 bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-white rounded border border-[#25D366]/30 transition-all shadow-sm"
-      >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.446-.272.371-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-        </svg>
-      </button>
-      
-      <button onClick={() => handleAbrirCobro(cuota)} className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-500 text-emerald-400 hover:text-white text-xs font-bold rounded transition-colors border border-emerald-500/30">
-        Cobrar
-      </button>
-    </div>
-  ) : (
-    <div className="flex flex-col items-center justify-center gap-1">
-      <span className="text-emerald-400 font-bold text-sm capitalize">
-        ✓ {cuota.metodo_pago ? cuota.metodo_pago.replace('_', ' ') : 'Pagado'}
-      </span>
-      <div className="flex gap-2">
-        <button onClick={() => { setCuotaToEdit(cuota); setIsEditPagoModalOpen(true); }} className="text-[10px] font-medium text-blue-400/80 hover:text-blue-400 hover:underline transition-colors">Editar</button>
-        <span className="text-zinc-600 text-[10px]">|</span>
-        <button onClick={() => handleAnularPago(cuota.id)} className="text-[10px] font-medium text-red-400/80 hover:text-red-400 hover:underline transition-colors">Deshacer</button>
-      </div>
-    </div>
-  )}
-</td>
+                        <td className="px-6 py-4 text-center whitespace-nowrap">
+                          {cuota.estado === 'pendiente' ? (
+                            <div className="flex items-center justify-center gap-2">
+                              {/* AQUÍ INSERTAREMOS EL COMPONENTE NUEVO EN EL PASO 2 */}
+                              <button 
+                                onClick={() => generarMensajeWhatsApp(selectedPrestamo.clientes?.nombre, selectedPrestamo.clientes?.telefono, cuota)}
+                                title="Enviar recordatorio por WhatsApp"
+                                className="p-1.5 bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-white rounded border border-[#25D366]/30 transition-all shadow-sm flex-shrink-0"
+                              >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.446-.272.371-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                                </svg>
+                              </button>
+                              
+                              <button onClick={() => handleAbrirCobro(cuota)} className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-500 text-emerald-400 hover:text-white text-xs font-bold rounded transition-colors border border-emerald-500/30 flex-shrink-0">
+                                Cobrar
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center gap-1 whitespace-nowrap">
+                              <span className="text-emerald-400 font-bold text-sm capitalize">
+                                ✓ {cuota.metodo_pago ? cuota.metodo_pago.replace('_', ' ') : 'Pagado'}
+                              </span>
+                              <div className="flex gap-2">
+                                <button onClick={() => { setCuotaToEdit(cuota); setIsEditPagoModalOpen(true); }} className="text-[10px] font-medium text-blue-400/80 hover:text-blue-400 hover:underline transition-colors">Editar</button>
+                                <span className="text-zinc-600 text-[10px]">|</span>
+                                <button onClick={() => handleAnularPago(cuota.id)} className="text-[10px] font-medium text-red-400/80 hover:text-red-400 hover:underline transition-colors">Deshacer</button>
+                              </div>
+                            </div>
+                          )}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -553,7 +554,7 @@ export default function FinanzasPage() {
               </table>
             </div>
             
-            <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex justify-end">
+            <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex justify-end flex-shrink-0">
               <button onClick={() => setIsCuotasModalOpen(false)} className="px-6 py-2 text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors">Cerrar Visor</button>
             </div>
           </div>

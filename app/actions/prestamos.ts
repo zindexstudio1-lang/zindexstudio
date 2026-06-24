@@ -301,3 +301,140 @@ export async function anularPagoCuota(cuotaId: string) {
     return { error: error.message || "Error al intentar deshacer el pago." };
   }
 }
+
+// ====================================================================
+// MOTOR DE ESTADÍSTICAS GLOBALES PARA EL DASHBOARD (V2 - PROYECCIONES)
+// ====================================================================
+export async function getEstadisticasDashboard(userId: string) {
+  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  
+  // Traemos también el nombre del cliente para armar la tabla
+  const { data: prestamos } = await supabaseAdmin.from("prestamos")
+    .select("id, monto_capital, tasa_interes, tasa_inversionista, tipo_plazo, plazo_meses, tipo_fondeo, admin_id, inversionista_id, clientes(nombre, telefono)")
+    .or(`admin_id.eq.${userId},inversionista_id.eq.${userId}`);
+
+  if (!prestamos || prestamos.length === 0) {
+    return { capitalColocado: 0, capitalRecuperado: 0, gananciaReal: 0, gananciaProyectada: 0, metodosPago: {}, totalPrestamos: 0, desgloseClientes: [] };
+  }
+
+  const prestamoIds = prestamos.map(p => p.id);
+
+  const { data: cuotas } = await supabaseAdmin.from("cuotas")
+    .select("id, amortizacion_capital, interes, estado, metodo_pago, prestamo_id, fecha_vencimiento, numero_cuota")
+    .in("prestamo_id", prestamoIds);
+
+  let capitalColocado = 0;
+  let capitalRecuperado = 0;
+  let gananciaReal = 0;
+  let gananciaProyectadaTotal = 0;
+  
+  let metodosPago: Record<string, number> = {
+    efectivo: 0, yape: 0, plin: 0, transferencia: 0
+  };
+
+  const desgloseMap = new Map();
+  const alertasCobro: any[] = [];
+
+  // 1. CÁLCULO DE CAPITAL Y PROYECCIÓN A FUTURO
+  prestamos.forEach(p => {
+     capitalColocado += p.monto_capital;
+     
+     // factorPlazo: Si es préstamo relámpago (días) es x1, si es mensual es x Meses
+     const factorPlazo = p.tipo_plazo === 'dias' ? 1 : p.plazo_meses;
+     const interesGlobalTotal = p.monto_capital * (p.tasa_interes / 100) * factorPlazo;
+     const ratioInversionista = p.tasa_interes > 0 ? (p.tasa_inversionista / p.tasa_interes) : 0;
+     
+     let miGananciaProyectada = 0;
+
+     if (p.inversionista_id === userId) {
+         miGananciaProyectada = interesGlobalTotal * ratioInversionista;
+     } else if (p.admin_id === userId) {
+         if (p.tipo_fondeo === 'socio') {
+             miGananciaProyectada = interesGlobalTotal * (1 - ratioInversionista);
+         } else {
+             miGananciaProyectada = interesGlobalTotal;
+         }
+     }
+
+     gananciaProyectadaTotal += miGananciaProyectada;
+
+     // Guardar datos del cliente para la tabla
+     desgloseMap.set(p.id, {
+         id: p.id,
+         cliente: (p.clientes as any)?.nombre || 'Cliente Desconocido',
+         capital: p.monto_capital,
+         gananciaProyectada: miGananciaProyectada,
+         gananciaReal: 0,
+         tipoFondeo: p.tipo_fondeo === 'socio' && p.admin_id === userId ? 'Dinero de Socio' : 'Mi Propio Dinero'
+     });
+  });
+
+  // 2. CÁLCULO DE DINERO YA RECAUDADO (GANANCIA REAL)
+  cuotas?.forEach(c => {
+     const desglose = desgloseMap.get(c.prestamo_id);
+     
+     if (c.estado === 'pagado') {
+        capitalRecuperado += c.amortizacion_capital;
+        
+        const p = prestamos.find(pr => pr.id === c.prestamo_id);
+        if (p) {
+           const ratioInversionista = p.tasa_interes > 0 ? (p.tasa_inversionista / p.tasa_interes) : 0;
+           let miGananciaCuota = 0;
+
+           if (p.inversionista_id === userId) {
+              miGananciaCuota = (c.interes * ratioInversionista);
+           } else if (p.admin_id === userId) {
+              if (p.tipo_fondeo === 'socio') {
+                 miGananciaCuota = (c.interes * (1 - ratioInversionista));
+              } else {
+                 miGananciaCuota = c.interes;
+              }
+           }
+
+           gananciaReal += miGananciaCuota;
+           if (desglose) {
+               desglose.gananciaReal += miGananciaCuota;
+           }
+        }
+
+        // Gráficos de métodos de pago
+        if (c.metodo_pago) {
+           const m = c.metodo_pago.toLowerCase();
+           if (m.includes('transferencia')) metodosPago['transferencia'] = (metodosPago['transferencia'] || 0) + 1;
+           else metodosPago[m] = (metodosPago[m] || 0) + 1;
+        } else if (c.estado === 'pendiente') {
+         // <-- 2. PEGA TODO ESTE BLOQUE DESPUÉS DEL IF DE 'pagado'
+         const hoy = new Date();
+         hoy.setHours(0, 0, 0, 0);
+         const vencimiento = new Date(c.fecha_vencimiento + 'T12:00:00Z');
+         vencimiento.setHours(0, 0, 0, 0);
+         const diffTime = vencimiento.getTime() - hoy.getTime();
+         const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+         if (diasRestantes <= 0) {
+             alertasCobro.push({
+                 cuota_id: c.id,
+                 numero_cuota: c.numero_cuota,
+                 diasRestantes: diasRestantes,
+                 monto_total: c.amortizacion_capital + c.interes,
+                 cliente_nombre: desglose?.cliente,
+                 cliente_telefono: desglose?.telefono,
+                 cuota_raw: { ...c, monto_total: c.amortizacion_capital + c.interes } 
+             });
+         }
+     }
+     }
+  });
+
+  return {
+     capitalColocado,
+     capitalRecuperado,
+     gananciaReal,
+     gananciaProyectada: gananciaProyectadaTotal,
+     metodosPago,
+     totalPrestamos: prestamos.length,
+     // Convertimos el Map a Array y ordenamos por ganancia proyectada
+     desgloseClientes: Array.from(desgloseMap.values()).sort((a, b) => b.gananciaProyectada - a.gananciaProyectada),
+     alertas: alertasCobro.sort((a, b) => a.diasRestantes - b.diasRestantes)
+  };
+}

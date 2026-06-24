@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation"; // <-- EL RADAR DE RUTAS
 import { createClient } from "@/utils/supabase/client";
 
 // Íconos SVG
@@ -18,27 +19,21 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  // Estado para guardar los datos reales del usuario
   const [userData, setUserData] = useState({ email: "Cargando...", role: "..." });
+  const pathname = usePathname(); // Activamos el radar
 
-  // Función que se ejecuta al cargar la página para buscar en Supabase
   useEffect(() => {
     async function loadUser() {
       const supabase = createClient();
-      
-      // 1. Obtenemos la sesión actual
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        // 2. Buscamos el rol de este usuario en nuestra tabla "profiles"
         const { data: profile } = await supabase
           .from("profiles")
           .select("role")
           .eq("id", user.id)
           .single();
 
-        // 3. Guardamos los datos para mostrarlos en pantalla
         setUserData({
           email: user.email || "Usuario",
           role: profile?.role || "admin"
@@ -47,6 +42,14 @@ export default function DashboardLayout({
     }
     loadUser();
   }, []);
+
+  // Función que decide si pinta el botón de azul o lo deja en gris
+  const getLinkClasses = (path: string) => {
+    const isActive = pathname === path;
+    return isActive
+      ? "flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold transition-all shadow-sm"
+      : "flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-transparent font-medium transition-colors";
+  };
 
   return (
     <div className="flex h-screen bg-zinc-950 overflow-hidden">
@@ -82,7 +85,7 @@ export default function DashboardLayout({
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-          <Link href="/dashboard" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium transition-colors">
+          <Link href="/dashboard" onClick={() => setIsSidebarOpen(false)} className={getLinkClasses("/dashboard")}>
             <HomeIcon /> Dashboard
           </Link>
           
@@ -90,19 +93,15 @@ export default function DashboardLayout({
             <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider px-3">Gestión</p>
           </div>
           
-          <Link href="/dashboard/usuarios" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors font-medium">
+          <Link href="/dashboard/usuarios" onClick={() => setIsSidebarOpen(false)} className={getLinkClasses("/dashboard/usuarios")}>
             <UsersIcon /> Mi Equipo
           </Link>
 
-          <Link href="/dashboard/finanzas" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors font-medium">
+          <Link href="/dashboard/finanzas" onClick={() => setIsSidebarOpen(false)} className={getLinkClasses("/dashboard/finanzas")}>
             <FinanceIcon /> Préstamos y Capital
           </Link>
 
-          <Link
-            href="/dashboard/inversionista" 
-            onClick={() => setIsSidebarOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
-          >
+          <Link href="/dashboard/inversionista" onClick={() => setIsSidebarOpen(false)} className={getLinkClasses("/dashboard/inversionista")}>
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
             </svg>
@@ -113,15 +112,13 @@ export default function DashboardLayout({
             <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider px-3">Sistemas</p>
           </div>
 
-          <Link href="/dashboard/bots" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors font-medium">
+          <Link href="/dashboard/bots" onClick={() => setIsSidebarOpen(false)} className={getLinkClasses("/dashboard/bots")}>
             <BotIcon /> Automatizaciones (RPA)
           </Link>
         </nav>        
 
-        {/* PERFIL DE USUARIO Y BOTÓN DE SALIDA (FUSIONADO) */}
+        {/* PERFIL DE USUARIO Y BOTÓN DE SALIDA */}
         <div className="p-4 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/20 mt-auto">
-          
-          {/* Datos del usuario */}
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow-lg uppercase">
               {userData.email.charAt(0)}
@@ -136,7 +133,6 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          {/* Botón de Cerrar Sesión (Solo Ícono Puertita) */}
           <button 
             onClick={async () => {
               const supabase = createClient();
