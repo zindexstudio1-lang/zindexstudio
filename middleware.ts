@@ -13,6 +13,7 @@ export const config = {
      * - Archivos estáticos y de Next.js (_next/static, _next/image, favicon.ico)
      * - La ruta raíz (/) que ya tiene su propia redirección
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf)$).*)',
+   // Reemplaza la línea del matcher por esta:
+   '/((?!_next/static|_next/image|favicon.ico|cronograma|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf)$).*)',
   ],
 }

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getListaSocios } from "@/app/actions/users"; 
 import BotonTerminos from "@/app/components/ui/BotonTerminos";
+import ModalNuevoPrestamo from "@/app/components/ui/ModalNuevoPrestamo"; 
 import { 
-  registrarPrestamo, 
   getPrestamosActivos, 
   getCuotasPorPrestamo, 
   procesarPagoCuota,
@@ -20,13 +20,7 @@ export default function FinanzasPage() {
   const [isLoadingTable, setIsLoadingTable] = useState(true);
   
   const [isNewLoanModalOpen, setIsNewLoanModalOpen] = useState(false);
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [tipoFondeo, setTipoFondeo] = useState("propio");
-  const [tipoPlazoFormulario, setTipoPlazoFormulario] = useState("meses"); // Estado para saber si pide Fecha Límite o Meses
   const [socios, setSocios] = useState<any[]>([]);
-  const formRef = useRef<HTMLFormElement>(null);
   const [filtroOrigen, setFiltroOrigen] = useState("todos"); 
 
   const [isCuotasModalOpen, setIsCuotasModalOpen] = useState(false);
@@ -39,7 +33,6 @@ export default function FinanzasPage() {
   const [isProcessingPago, setIsProcessingPago] = useState(false);
   const [tipoPagoForm, setTipoPagoForm] = useState("completo");
 
-  // Estado para el modal de Editar Pago
   const [isEditPagoModalOpen, setIsEditPagoModalOpen] = useState(false);
   const [cuotaToEdit, setCuotaToEdit] = useState<any>(null);
 
@@ -70,27 +63,6 @@ export default function FinanzasPage() {
     }
   };
 
-  const handleCreatePrestamo = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const result = await registrarPrestamo(formData);
-
-    if (result.error) {
-      setErrorMessage(result.error);
-      setIsLoading(false);
-      setIsErrorModalOpen(true);
-    } else if (result.success) {
-      formRef.current?.reset();
-      await refreshData();
-      setIsLoading(false);
-      setIsNewLoanModalOpen(false);
-      setTipoFondeo("propio"); 
-      setTipoPlazoFormulario("meses");
-    }
-  };
-
-  // DIVISIONES INTELIGENTES 100% ESTRICTAS
   const prestamosFiltrados = prestamos.filter(p => {
     if (filtroOrigen === "todos") return true;
     return p.tipo_fondeo === filtroOrigen;
@@ -114,7 +86,6 @@ export default function FinanzasPage() {
     setIsPagoModalOpen(true);
   };
 
-// GENERADOR DE MENSAJES DE WHATSAPP AUTOMÁTICOS (VERSIÓN ESPACIADA Y BLINDADA)
   const generarMensajeWhatsApp = (clienteNombre: string, telefono: string, cuota: any) => {
     if (!telefono) {
       alert("⚠️ Este cliente no tiene un número de teléfono registrado.");
@@ -133,18 +104,15 @@ export default function FinanzasPage() {
     const fechaFmt = vencimiento.toLocaleDateString('es-ES');
     
     let mensajeTexto = "";
-    let emojiHex = ""; // Código 100% puro para la URL
+    let emojiHex = ""; 
 
     if (diasRestantes > 1) {
-      // Recordatorio preventivo (Manito 👋)
       emojiHex = "%F0%9F%91%8B"; 
       mensajeTexto = ` Hola *${clienteNombre}*,\nTe saludamos de *Z-Index Studio*.\n\nTe recordamos amablemente que tu cuota de *S/ ${montoFmt}* vence en ${diasRestantes} días (el ${fechaFmt}).\n\n¡Gracias por tu puntualidad!`;
     } else if (diasRestantes === 1 || diasRestantes === 0) {
-      // Recordatorio de pago HOY (Alerta Amarilla ⚠️)
       emojiHex = "%E2%9A%A0%EF%B8%8F"; 
       mensajeTexto = ` Hola *${clienteNombre}*.\n\nTe informamos que tu cuota de *S/ ${montoFmt}* vence *HOY* (${fechaFmt}).\n\nTienes plazo máximo para cancelar hasta mañana para evitar recargos por mora.\n\n¡Quedamos atentos a tu envío!`;
     } else {
-      // Recordatorio de Vencido / Mora (Sirena Roja 🚨)
       const diasAtraso = Math.abs(diasRestantes);
       emojiHex = "%F0%9F%9A%A8"; 
       mensajeTexto = ` Hola *${clienteNombre}*.\n\nNos comunicamos para informarte que tu cuota de *S/ ${montoFmt}* se encuentra *VENCIDA* por ${diasAtraso} día(s).\n\nPor favor, regulariza tu pago lo antes posible para evitar mayores penalidades en el sistema.`;
@@ -153,9 +121,7 @@ export default function FinanzasPage() {
     let numLimpio = telefono.replace(/\D/g, '');
     if (numLimpio.length === 9) numLimpio = '51' + numLimpio; 
 
-    // Sumamos el emoji crudo + el texto codificado con sus saltos de línea
     const textoFinal = emojiHex + encodeURIComponent(mensajeTexto);
-
     const url = `https://wa.me/${numLimpio}?text=${textoFinal}`;
     window.open(url, '_blank');
   };
@@ -234,7 +200,6 @@ export default function FinanzasPage() {
         </button>
       </div>
 
-      {/* MENÚ DE PESTAÑAS DE ORIGEN DE CAPITAL */}
       <div className="flex space-x-2 border-b border-zinc-800 mb-6 overflow-x-auto no-scrollbar">
         <button onClick={() => setFiltroOrigen("todos")} className={`px-5 py-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${filtroOrigen === "todos" ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5' : 'border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
           Cartera Global
@@ -249,7 +214,6 @@ export default function FinanzasPage() {
 
       {isLoadingTable && <div className="text-zinc-500 text-center py-8">Sincronizando estados financieros...</div>}
 
-      {/* SECCIÓN 1: PRÉSTAMOS RÁPIDOS (1 MES O DÍAS) */}
       {!isLoadingTable && prestamosUnMes.length > 0 && (
         <div className="mb-8">
           <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-wider mb-3 px-1">Préstamos Relámpago (Corto Plazo)</h2>
@@ -269,15 +233,15 @@ export default function FinanzasPage() {
                 <tbody className="divide-y divide-zinc-800/80">
                   {prestamosUnMes.map((p) => (
                     <tr key={p.id} className="hover:bg-zinc-800/20 transition-colors">
-                <td className="px-6 py-4 font-medium text-white whitespace-nowrap">
-                    <div className="flex flex-col">
-                      <span>{p.clientes?.nombre || "N/A"}</span>
-                            {p.tipo_fondeo === 'socio' ? (
-                      <span className="text-[10px] text-purple-400 mt-0.5 font-bold uppercase tracking-wider">Fondeado por Socio</span>
-                        ) : (
-                      <span className="text-[10px] text-blue-400 mt-0.5 font-bold uppercase tracking-wider">Capital Propio</span>
-                        )}
-                     </div>
+                      <td className="px-6 py-4 font-medium text-white whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span>{p.clientes?.nombre || "N/A"}</span>
+                          {p.tipo_fondeo === 'socio' ? (
+                            <span className="text-[10px] text-purple-400 mt-0.5 font-bold uppercase tracking-wider">Fondeado por Socio</span>
+                          ) : (
+                            <span className="text-[10px] text-blue-400 mt-0.5 font-bold uppercase tracking-wider">Capital Propio</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">{p.clientes?.documento || "N/A"}</td>
                       <td className="px-6 py-4 text-center text-emerald-400 font-medium whitespace-nowrap">S/ {p.monto_capital.toFixed(2)}</td>
@@ -287,9 +251,38 @@ export default function FinanzasPage() {
                       <td className="px-6 py-4 text-center whitespace-nowrap">{p.fecha_desembolso}</td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => handleVerCuotas(p)} title="Ver Cronograma" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-indigo-500/10 hover:text-indigo-400 rounded-md transition-all"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
+                          <button onClick={() => handleVerCuotas(p)} title="Ver Cronograma" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-indigo-500/10 hover:text-indigo-400 rounded-md transition-all">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          </button>
+                          
                           <BotonTerminos clienteNombre={(p.clientes as any)?.nombre} telefono={(p.clientes as any)?.telefono} />
-                          <button onClick={() => setPrestamoToDelete(p.id)} title="Eliminar Préstamo" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-all"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button>
+                          
+                          <button onClick={() => setPrestamoToDelete(p.id)} title="Eliminar Préstamo" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-all">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                          </button>
+                          
+                          <button 
+                            onClick={() => {
+                              const link = `${window.location.origin}/cronograma/${p.id}`;
+                              const mensaje = `¡Hola! 📄 Aquí tienes tu acceso seguro para revisar el estado de tu financiamiento en tiempo real:\n\n🔗 ${link}\n\nGuarda este enlace para consultar tus cuotas cuando lo necesites.`;
+                              
+                              const telefonoBruto = (p.clientes as any)?.telefono || "";
+                              let numLimpio = telefonoBruto.replace(/\D/g, '');
+                              if (numLimpio.length === 9) numLimpio = '51' + numLimpio; 
+                              
+                              if (numLimpio) {
+                                window.open(`https://wa.me/${numLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
+                              } else {
+                                window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+                              }
+                            }} 
+                            title="Enviar Link por WhatsApp" 
+                            className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/10 hover:text-emerald-400 rounded-md transition-all"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                            </svg>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -301,7 +294,6 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* SECCIÓN 2: PRÉSTAMOS A PLAZOS (2+ MESES) */}
       {!isLoadingTable && prestamosVariosMeses.length > 0 && (
         <div className="mb-8">
           <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-wider mb-3 px-1">Préstamos a Plazos (2+ Meses)</h2>
@@ -322,15 +314,15 @@ export default function FinanzasPage() {
                   {prestamosVariosMeses.map((p) => (
                     <tr key={p.id} className="hover:bg-zinc-800/20 transition-colors">
                       <td className="px-6 py-4 font-medium text-white whitespace-nowrap">
-  <div className="flex flex-col">
-    <span>{p.clientes?.nombre || "N/A"}</span>
-    {p.tipo_fondeo === 'socio' ? (
-      <span className="text-[10px] text-purple-400 mt-0.5 font-bold uppercase tracking-wider">Fondeado por Socio</span>
-    ) : (
-      <span className="text-[10px] text-blue-400 mt-0.5 font-bold uppercase tracking-wider">Capital Propio</span>
-    )}
-  </div>
-</td>
+                        <div className="flex flex-col">
+                          <span>{p.clientes?.nombre || "N/A"}</span>
+                          {p.tipo_fondeo === 'socio' ? (
+                            <span className="text-[10px] text-purple-400 mt-0.5 font-bold uppercase tracking-wider">Fondeado por Socio</span>
+                          ) : (
+                            <span className="text-[10px] text-blue-400 mt-0.5 font-bold uppercase tracking-wider">Capital Propio</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">{p.clientes?.documento || "N/A"}</td>
                       <td className="px-6 py-4 text-center text-emerald-400 font-medium whitespace-nowrap">S/ {p.monto_capital.toFixed(2)}</td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
@@ -339,10 +331,39 @@ export default function FinanzasPage() {
                       <td className="px-6 py-4 text-center whitespace-nowrap">{p.fecha_desembolso}</td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => handleVerCuotas(p)} title="Ver Cronograma" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-indigo-500/10 hover:text-indigo-400 rounded-md transition-all"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
+                          <button onClick={() => handleVerCuotas(p)} title="Ver Cronograma" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-indigo-500/10 hover:text-indigo-400 rounded-md transition-all">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          </button>
+                          
                           <BotonTerminos clienteNombre={(p.clientes as any)?.nombre} telefono={(p.clientes as any)?.telefono} />
-                          <button onClick={() => setPrestamoToDelete(p.id)} title="Eliminar Préstamo" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-all"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button>
+                          
+                          <button onClick={() => setPrestamoToDelete(p.id)} title="Eliminar Préstamo" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-all">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                          </button>
 
+                         <button 
+  onClick={() => {
+    const link = `${window.location.origin}/cronograma/${p.id}`;
+    // Usamos el texto ya convertido a formato URL para evitar errores de codificación
+    const mensajeSeguro = `%C2%A1Hola!%20%F0%9F%93%84%20Aqu%C3%AD%20tienes%20tu%20acceso%20seguro%20para%20revisar%20el%20estado%20de%20tu%20financiamiento%20en%20tiempo%20real%3A%0A%0A%F0%9F%94%97%20${encodeURIComponent(link)}%0A%0AGuarda%20este%20enlace%20para%20consultar%20tus%20cuotas%20cuando%20lo%20necesites.`;
+    
+    const telefonoBruto = (p.clientes as any)?.telefono || "";
+    let numLimpio = telefonoBruto.replace(/\D/g, '');
+    if (numLimpio.length === 9) numLimpio = '51' + numLimpio; 
+    
+    if (numLimpio) {
+      window.open(`https://wa.me/${numLimpio}?text=${mensajeSeguro}`, '_blank');
+    } else {
+      window.open(`https://wa.me/?text=${mensajeSeguro}`, '_blank');
+    }
+  }} 
+  title="Enviar Link por WhatsApp" 
+  className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/20 hover:text-emerald-300 rounded-md transition-all"
+>
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+  </svg>
+</button>
                         </div>
                       </td>
                     </tr>
@@ -354,120 +375,15 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* MODAL NUEVO PRÉSTAMO */}
-      {isNewLoanModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isLoading && setIsNewLoanModalOpen(false)}></div>
-          <div className="relative z-10 w-full max-w-3xl bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-zinc-800 bg-zinc-950/40">
-              <h2 className="text-xl font-bold text-white">Estructuración de Nuevo Crédito</h2>
-            </div>
-            
-            <form ref={formRef} onSubmit={handleCreatePrestamo}>
-              <input type="hidden" name="admin_id" value={currentUser?.id || ""} />
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[65vh] overflow-y-auto">
-                {/* LADO IZQUIERDO */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider border-b border-zinc-800/60 pb-1">Datos Identatarios del Cliente</h3>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">Nombre Completo</label>
-                    <input type="text" name="nombre" required placeholder="Ej. Juan Pérez" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">DNI / RUC</label>
-                    <input type="text" name="documento" required placeholder="Ej. 74839201" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">Teléfono</label>
-                    <input type="text" name="telefono" placeholder="Ej. 987654321" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
-                  </div>
-                </div>
+      {/* COMPONENTE INYECTADO */}
+      <ModalNuevoPrestamo 
+        isOpen={isNewLoanModalOpen} 
+        onClose={() => setIsNewLoanModalOpen(false)} 
+        onSuccess={refreshData} 
+        currentUser={currentUser} 
+        socios={socios} 
+      />
 
-                {/* LADO DERECHO */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider border-b border-zinc-800/60 pb-1">Condiciones del Crédito</h3>
-                  
-                  <div className="p-4 bg-zinc-950/50 border border-zinc-800 rounded-xl mb-4 space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-400 mb-1.5">Origen del Capital</label>
-                      <select name="tipo_fondeo" value={tipoFondeo} onChange={(e) => setTipoFondeo(e.target.value)} className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-white outline-none focus:border-indigo-500">
-                        <option value="propio">Mi Capital (Ganancia 100%)</option>
-                        <option value="socio">Capital de Socio / Inversionista</option>
-                      </select>
-                    </div>
-
-                    {tipoFondeo === 'socio' && (
-                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
-                        <div>
-                          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Socio Inversionista</label>
-                          <select name="inversionista_id" required className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white outline-none focus:border-indigo-500">
-                            <option value="">Seleccionar socio...</option>
-                            {socios.map((socio) => (
-                              <option key={socio.id} value={socio.id} className="capitalize">{socio.email.split('@')[0]}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tasa a Pagar (%)</label>
-                          <input type="number" name="tasa_inversionista" step="0.01" required defaultValue="10" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white outline-none focus:border-indigo-500" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-400 mb-1.5">Capital</label>
-                      <input type="number" name="monto_capital" step="0.01" required placeholder="0.00" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tasa (%)</label>
-                      <input type="number" name="tasa_interes" step="0.01" required placeholder="0.00" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
-                    </div>
-                  </div>
-
-                  {/* SELECTOR MÁGICO: DÍAS O MESES */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tipo de Plazo</label>
-                      <select name="tipo_plazo" value={tipoPlazoFormulario} onChange={(e) => setTipoPlazoFormulario(e.target.value)} className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors">
-                        <option value="meses">Meses (Alemán)</option>
-                        <option value="dias">Días (Relámpago)</option>
-                      </select>
-                    </div>
-                    
-                    {tipoPlazoFormulario === 'dias' ? (
-                      <div className="animate-in fade-in zoom-in duration-200">
-                        <label className="block text-xs font-bold text-amber-400 mb-1.5">Fecha Límite Pago</label>
-                        <input type="date" name="fecha_limite" required className="w-full px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-400 outline-none focus:border-amber-500 uppercase" />
-                      </div>
-                    ) : (
-                      <div className="animate-in fade-in zoom-in duration-200">
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Plazo (Meses)</label>
-                        <input type="number" name="plazo" required placeholder="Ej. 4" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">Fecha Oficial de Desembolso</label>
-                    <input type="date" name="fecha_desembolso" required className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors uppercase text-xs" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-zinc-800 bg-zinc-950/60 flex justify-end gap-3">
-                <button type="button" disabled={isLoading} onClick={() => setIsNewLoanModalOpen(false)} className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors disabled:opacity-50">Cancelar</button>
-                <button type="submit" disabled={isLoading} className="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
-                  {isLoading ? "Procesando Estructura..." : "Generar Cronograma"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-{/* VISOR DE CRONOGRAMA */}
       {isCuotasModalOpen && selectedPrestamo && !isPagoModalOpen && !isEditPagoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsCuotasModalOpen(false)}></div>
@@ -480,7 +396,6 @@ export default function FinanzasPage() {
               <button onClick={() => setIsCuotasModalOpen(false)} className="p-2 text-zinc-400 hover:text-white bg-zinc-800/50 rounded-lg transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             
-            {/* AQUÍ ESTÁ LA MAGIA DEL SCROLL: overflow-x-auto */}
             <div className="p-0 overflow-y-auto overflow-x-auto flex-1 bg-zinc-900/50 no-scrollbar">
               <table className="w-full text-sm text-zinc-400">
                 <thead className="text-xs uppercase bg-zinc-950 text-zinc-500 sticky top-0 border-b border-zinc-800 z-10">
@@ -523,7 +438,6 @@ export default function FinanzasPage() {
                         <td className="px-6 py-4 text-center whitespace-nowrap">
                           {cuota.estado === 'pendiente' ? (
                             <div className="flex items-center justify-center gap-2">
-                              {/* AQUÍ INSERTAREMOS EL COMPONENTE NUEVO EN EL PASO 2 */}
                               <button 
                                 onClick={() => generarMensajeWhatsApp(selectedPrestamo.clientes?.nombre, selectedPrestamo.clientes?.telefono, cuota)}
                                 title="Enviar recordatorio por WhatsApp"
@@ -565,7 +479,6 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* MODAL COBRAR */}
       {isPagoModalOpen && selectedCuota && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsPagoModalOpen(false)}></div>
@@ -627,7 +540,6 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* MODAL EDITAR DETALLES DE PAGO */}
       {isEditPagoModalOpen && cuotaToEdit && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsEditPagoModalOpen(false)}></div>
@@ -674,7 +586,6 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {/* MODAL ELIMINAR CONTRATO */}
       {prestamoToDelete && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setPrestamoToDelete(null)}></div>

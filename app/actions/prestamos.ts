@@ -382,3 +382,34 @@ export async function getEstadisticasDashboard(userId: string, filtroOrigen: str
      alertas: alertasCobro.sort((a, b) => a.diasRestantes - b.diasRestantes)
   };
 }
+
+// ====================================================================
+// PORTAL PÚBLICO DEL CLIENTE (SIN LOGIN)
+// ====================================================================
+export async function getPrestamoPublico(prestamoId: string) {
+  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  
+  try {
+    // 1. Buscamos el préstamo y el nombre del cliente
+    const { data: prestamo, error: errorPrestamo } = await supabaseAdmin
+      .from("prestamos")
+      .select("id, monto_capital, tasa_interes, tipo_plazo, plazo_meses, fecha_desembolso, estado, clientes(nombre)")
+      .eq("id", prestamoId)
+      .single();
+      
+    if (errorPrestamo || !prestamo) return { error: "No se encontró el contrato." };
+    
+    // 2. Buscamos sus cuotas
+    const { data: cuotas, error: errorCuotas } = await supabaseAdmin
+      .from("cuotas")
+      .select("*")
+      .eq("prestamo_id", prestamoId)
+      .order("numero_cuota", { ascending: true });
+      
+    if (errorCuotas) return { error: "Error al cargar las cuotas." };
+    
+    return { prestamo, cuotas };
+  } catch (error: any) {
+    return { error: "Error de servidor al cargar el portal." };
+  }
+}
