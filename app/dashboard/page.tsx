@@ -7,25 +7,36 @@ import { getEstadisticasDashboard } from "@/app/actions/prestamos";
 
 export default function DashboardOverview() {
   const [userName, setUserName] = useState("Cargando...");
+  const [userId, setUserId] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const [filtroOrigen, setFiltroOrigen] = useState("todos");
 
   useEffect(() => {
     async function loadDashboard() {
+      setIsLoading(true);
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
       
-      if (user) {
-        setUserName(user.email?.split('@')[0] || "Usuario");
-        const data = await getEstadisticasDashboard(user.id);
-        setStats(data);
-        setIsLoading(false);
+      let currentId = userId;
+      if (!currentId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          currentId = user.id;
+          setUserId(user.id);
+          setUserName(user.email?.split('@')[0] || "Usuario");
+        }
       }
+
+      if (currentId) {
+        const data = await getEstadisticasDashboard(currentId, filtroOrigen);
+        setStats(data);
+      }
+      setIsLoading(false);
     }
     loadDashboard();
-  }, []);
+  }, [filtroOrigen, userId]);
 
-  // <-- 1. PEGA ESTA FUNCIÓN AQUÍ, JUSTO DEBAJO DEL useEffect
   const generarMensajeWhatsApp = (clienteNombre: string, telefono: string, cuota: any) => {
     if (!telefono) { alert("⚠️ Este cliente no tiene teléfono."); return; }
     const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
@@ -43,25 +54,29 @@ export default function DashboardOverview() {
     window.open(`https://wa.me/${numLimpio}?text=${encodeURIComponent(msg).replace(/%25/g, '%')}`, '_blank');
   };
 
-  // Cálculos para gráficos
   const totalPagos = stats ? Object.values(stats.metodosPago).reduce((a: any, b: any) => a + b, 0) as number : 0;
-  
-  const getPorcentaje = (cantidad: number) => {
-    if (totalPagos === 0) return 0;
-    return Math.round((cantidad / totalPagos) * 100);
-  };
-
-  const progresoCapital = stats && stats.capitalColocado > 0 
-    ? Math.min(100, Math.round((stats.capitalRecuperado / stats.capitalColocado) * 100)) 
-    : 0;
+  const getPorcentaje = (cantidad: number) => totalPagos === 0 ? 0 : Math.round((cantidad / totalPagos) * 100);
+  const progresoCapital = stats && stats.capitalColocado > 0 ? Math.min(100, Math.round((stats.capitalRecuperado / stats.capitalColocado) * 100)) : 0;
 
   return (
     <div className="p-4 md:p-8 animate-in fade-in duration-500">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 capitalize">
           Bienvenido, <span className="text-indigo-400">{userName}</span>
         </h1>
         <p className="text-zinc-400 text-sm">Resumen financiero global de tu cartera operativa y fondeos.</p>
+      </div>
+
+      <div className="flex space-x-2 border-b border-zinc-800 mb-6 overflow-x-auto no-scrollbar">
+        <button onClick={() => setFiltroOrigen("todos")} className={`px-5 py-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${filtroOrigen === "todos" ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5' : 'border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+          Balance Global
+        </button>
+        <button onClick={() => setFiltroOrigen("propio")} className={`px-5 py-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${filtroOrigen === "propio" ? 'border-blue-500 text-blue-400 bg-blue-500/5' : 'border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+          Mi Capital (100%)
+        </button>
+        <button onClick={() => setFiltroOrigen("socio")} className={`px-5 py-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${filtroOrigen === "socio" ? 'border-purple-500 text-purple-400 bg-purple-500/5' : 'border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30'}`}>
+          Fondeos de Socios
+        </button>
       </div>
 
       {isLoading ? (
@@ -69,14 +84,13 @@ export default function DashboardOverview() {
           <p className="text-zinc-500 font-medium animate-pulse">Sincronizando motores financieros...</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
 
-          {/* <-- 2. PEGA EL PANEL ROJO AQUÍ, ANTES DE LAS TARJETAS --> */}
           {stats.alertas && stats.alertas.length > 0 && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 shadow-lg shadow-red-900/10 animate-in fade-in zoom-in duration-300">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 shadow-lg shadow-red-900/10">
               <div className="flex items-center gap-3 mb-4">
                 <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>
-                <h2 className="text-lg font-bold text-red-400">Atención: Tienes {stats.alertas.length} cobro(s) pendiente(s) para HOY</h2>
+                <h2 className="text-lg font-bold text-red-400">Atención: Tienes {stats.alertas.length} cobro(s) pendiente(s) en esta cartera</h2>
               </div>
               <div className="space-y-3">
                 {stats.alertas.map((alerta: any) => (
@@ -95,7 +109,6 @@ export default function DashboardOverview() {
             </div>
           )}
 
-          {/* TARJETAS PRINCIPALES */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 shadow-lg shadow-black/20 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -104,8 +117,8 @@ export default function DashboardOverview() {
               <p className="text-sm font-medium text-zinc-400 mb-1">Capital Total en la Calle</p>
               <h2 className="text-3xl font-bold text-white mb-2">S/ {stats.capitalColocado.toFixed(2)}</h2>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                <p className="text-xs text-indigo-400 font-medium">Dinero trabajando actualmente</p>
+                <span className={`w-2 h-2 rounded-full animate-pulse ${filtroOrigen === 'propio' ? 'bg-blue-500' : filtroOrigen === 'socio' ? 'bg-purple-500' : 'bg-indigo-500'}`}></span>
+                <p className={`text-xs font-medium ${filtroOrigen === 'propio' ? 'text-blue-400' : filtroOrigen === 'socio' ? 'text-purple-400' : 'text-indigo-400'}`}>Dinero trabajando actualmente</p>
               </div>
             </div>
 
@@ -129,11 +142,10 @@ export default function DashboardOverview() {
               </div>
               <p className="text-sm font-medium text-zinc-400 mb-1">Contratos Activos</p>
               <h2 className="text-3xl font-bold text-white mb-2">{stats.totalPrestamos}</h2>
-              <p className="text-xs text-amber-500/70 font-medium">Préstamos y fondeos vigentes</p>
+              <p className="text-xs text-amber-500/70 font-medium">Préstamos y fondeos en esta cartera</p>
             </div>
           </div>
 
-          {/* TABLA: DESGLOSE POR CLIENTE */}
           <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl shadow-lg shadow-black/20 overflow-hidden mt-6">
             <div className="p-5 border-b border-zinc-800 bg-zinc-950/50">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">Radiografía de Rendimientos (Mi Tajada)</h3>
@@ -154,7 +166,7 @@ export default function DashboardOverview() {
                 <tbody className="divide-y divide-zinc-800/60">
                   {stats.desgloseClientes.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-8 text-center text-zinc-500 whitespace-nowrap">No hay contratos activos para mostrar.</td>
+                      <td colSpan={5} className="px-6 py-8 text-center text-zinc-500 whitespace-nowrap">No hay contratos activos para mostrar en este filtro.</td>
                     </tr>
                   ) : (
                     stats.desgloseClientes.map((cliente: any) => {
@@ -196,10 +208,7 @@ export default function DashboardOverview() {
             </div>
           </div>
 
-          {/* SECCIÓN DE GRÁFICOS INFERIORES */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            
-            {/* GRÁFICO 1: RETORNO DE CAPITAL */}
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 shadow-lg shadow-black/20">
               <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider mb-6">Velocidad de Retorno de Capital</h3>
               <div className="space-y-4">
@@ -219,14 +228,12 @@ export default function DashboardOverview() {
               </div>
             </div>
 
-            {/* GRÁFICO 2: CANALES DE RECAUDACIÓN */}
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 shadow-lg shadow-black/20">
               <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-6">Distribución de Pagos</h3>
               {totalPagos === 0 ? (
                 <div className="h-full flex items-center justify-center pb-8"><p className="text-sm text-zinc-600 font-medium">Aún no hay cobros registrados.</p></div>
               ) : (
                 <div className="space-y-4">
-                  {/* YAPE */}
                   <div>
                     <div className="flex justify-between text-xs mb-1.5">
                       <span className="font-bold text-[#74246D]">YAPE</span>
@@ -237,7 +244,6 @@ export default function DashboardOverview() {
                     </div>
                   </div>
 
-                  {/* EFECTIVO */}
                   <div>
                     <div className="flex justify-between text-xs mb-1.5">
                       <span className="font-bold text-emerald-500">EFECTIVO FÍSICO</span>
@@ -248,7 +254,6 @@ export default function DashboardOverview() {
                     </div>
                   </div>
 
-                  {/* PLIN */}
                   <div>
                     <div className="flex justify-between text-xs mb-1.5">
                       <span className="font-bold text-[#00E1C2]">PLIN</span>
@@ -259,7 +264,6 @@ export default function DashboardOverview() {
                     </div>
                   </div>
 
-                  {/* TRANSFERENCIAS */}
                   <div>
                     <div className="flex justify-between text-xs mb-1.5">
                       <span className="font-bold text-blue-500">TRANSFERENCIAS (Bancos)</span>
@@ -274,7 +278,6 @@ export default function DashboardOverview() {
             </div>
           </div>
 
-          {/* ACCESOS DIRECTOS */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             <Link href="/dashboard/finanzas" className="group p-5 bg-zinc-900/30 border border-zinc-800 rounded-xl hover:bg-zinc-800/50 hover:border-indigo-500/30 transition-all flex items-center justify-between">
               <div className="flex items-center gap-4">

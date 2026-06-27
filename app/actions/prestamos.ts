@@ -31,7 +31,6 @@ export async function registrarPrestamo(formData: FormData) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // LÓGICA DE FECHAS Y DÍAS EXACTOS
     let plazoNum = 1;
     let diasExactos = 1;
     let fechaPagoCuota = new Date(fechaDesembolsoStr + 'T00:00:00Z');
@@ -48,7 +47,7 @@ export async function registrarPrestamo(formData: FormData) {
 
       if (diasExactos <= 0) return { error: "La fecha límite debe ser mayor al desembolso." };
       
-      plazoNum = diasExactos; // Guardamos los días reales en la BD para que las tablas lo lean
+      plazoNum = diasExactos; 
       fechaPagoCuota = d2;
     } else {
       plazoNum = parseInt(formData.get("plazo") as string);
@@ -85,9 +84,6 @@ export async function registrarPrestamo(formData: FormData) {
     const cuotasParaInsertar = [];
     let saldoRestante = montoCapital;
 
-    // ==========================================
-    // ESCENARIO A: PRÉSTAMO RELÁMPAGO POR DÍAS (FECHA LÍMITE)
-    // ==========================================
     if (tipoPlazo === "dias") {
       const interesTotal = parseFloat((montoCapital * (tasaInteres / 100) * (diasExactos / 30)).toFixed(2));
       const cuotaTotal = parseFloat((montoCapital + interesTotal).toFixed(2));
@@ -101,23 +97,15 @@ export async function registrarPrestamo(formData: FormData) {
         fecha_vencimiento: fechaPagoCuota.toISOString().split('T')[0],
         estado: 'pendiente'
       });
-    } 
-// ==========================================
-    // ESCENARIO B: PRÉSTAMO TRADICIONAL (ALEMÁN)
-    // ==========================================
-    else {
+    } else {
       const fechaBase = new Date(fechaDesembolsoStr + 'T00:00:00Z');
       const amortizacionFijaBase = parseFloat((montoCapital / plazoNum).toFixed(2));
       
       for (let i = 1; i <= plazoNum; i++) {
-        // 1. Calculamos el mes exacto usando la base
         let fechaPagoCuota = new Date(fechaBase);
         fechaPagoCuota.setUTCMonth(fechaBase.getUTCMonth() + i);
-        
-        // 2. AÑADIMOS EL DÍA EXTRA DE GRACIA (No afecta el interés)
         fechaPagoCuota.setUTCDate(fechaPagoCuota.getUTCDate() + 1);
 
-        // 3. El interés sigue intacto, plano por mes
         const interesMensual = parseFloat((saldoRestante * (tasaInteres / 100)).toFixed(2));
         let amortizacionCuota = i === plazoNum ? parseFloat(saldoRestante.toFixed(2)) : amortizacionFijaBase;
         const cuotaTotal = parseFloat((amortizacionCuota + interesMensual).toFixed(2));
@@ -135,15 +123,15 @@ export async function registrarPrestamo(formData: FormData) {
       }
     }
 
-      const { error: cuotasError } = await supabaseAdmin.from("cuotas").insert(cuotasParaInsertar);
-      if (cuotasError) throw new Error("Error insertar cuotas: " + cuotasError.message);
+    const { error: cuotasError } = await supabaseAdmin.from("cuotas").insert(cuotasParaInsertar);
+    if (cuotasError) throw new Error("Error insertar cuotas: " + cuotasError.message);
 
-      return { success: true };
+    return { success: true };
       
-    } catch (error: any) {
-      return { error: error.message || "Error crítico en el servidor." };
-    }
+  } catch (error: any) {
+    return { error: error.message || "Error crítico en el servidor." };
   }
+}
 
 export async function getPrestamosActivos(adminId: string) {
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -228,7 +216,6 @@ export async function procesarPagoCuota(formData: FormData) {
   }
 }
 
-// NUEVA FUNCIÓN: EDITAR DETALLES DE UN PAGO YA CONFIRMADO
 export async function editarPagoCuota(formData: FormData) {
   const cuotaId = formData.get("cuota_id") as string;
   const metodoPago = formData.get("metodo_pago") as string;
@@ -253,45 +240,21 @@ export async function editarPagoCuota(formData: FormData) {
 }
 
 export async function getPrestamosComoInversionista(inversionistaId: string) {
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
   const { data, error } = await supabaseAdmin
     .from("prestamos")
-    .select(`
-      id,
-      monto_capital,
-      tasa_interes,
-      tasa_inversionista,
-      plazo_meses,
-      tipo_plazo,
-      fecha_desembolso,
-      estado,
-      admin_id,
-      clientes (
-        nombre,
-        documento,
-        telefono
-      )
-    `)
+    .select(`id, monto_capital, tasa_interes, tasa_inversionista, plazo_meses, tipo_plazo, fecha_desembolso, estado, admin_id, clientes (nombre, documento, telefono)`)
     .eq("inversionista_id", inversionistaId)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error al traer cartera del inversionista:", error);
-    return [];
-  }
-  
+  if (error) return [];
   return data || [];
 }
 
 export async function anularPagoCuota(cuotaId: string) {
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   try {
-    // Nota de seguridad: El "Deshacer" básico devuelve a pendiente. 
-    // Si era un "Reenganche", el usuario tendrá que re-configurar manualmente el clon para no desfasar todo el sistema.
     const { error } = await supabaseAdmin.from("cuotas").update({
       estado: 'pendiente', fecha_pago_real: null, mora_aplicada: 0, tipo_pago: null, metodo_pago: null
     }).eq("id", cuotaId);
@@ -303,18 +266,23 @@ export async function anularPagoCuota(cuotaId: string) {
 }
 
 // ====================================================================
-// MOTOR DE ESTADÍSTICAS GLOBALES PARA EL DASHBOARD (V2 - PROYECCIONES)
+// MOTOR DE ESTADÍSTICAS GLOBALES PARA EL DASHBOARD (V4 - CON FILTROS)
 // ====================================================================
-export async function getEstadisticasDashboard(userId: string) {
+export async function getEstadisticasDashboard(userId: string, filtroOrigen: string = 'todos') {
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   
-  // Traemos también el nombre del cliente para armar la tabla
-  const { data: prestamos } = await supabaseAdmin.from("prestamos")
+  const { data: prestamosDb } = await supabaseAdmin.from("prestamos")
     .select("id, monto_capital, tasa_interes, tasa_inversionista, tipo_plazo, plazo_meses, tipo_fondeo, admin_id, inversionista_id, clientes(nombre, telefono)")
     .or(`admin_id.eq.${userId},inversionista_id.eq.${userId}`);
 
-  if (!prestamos || prestamos.length === 0) {
-    return { capitalColocado: 0, capitalRecuperado: 0, gananciaReal: 0, gananciaProyectada: 0, metodosPago: {}, totalPrestamos: 0, desgloseClientes: [] };
+  let prestamos = prestamosDb || [];
+
+  if (filtroOrigen !== 'todos') {
+      prestamos = prestamos.filter(p => p.tipo_fondeo === filtroOrigen);
+  }
+
+  if (prestamos.length === 0) {
+    return { capitalColocado: 0, capitalRecuperado: 0, gananciaReal: 0, gananciaProyectada: 0, metodosPago: {}, totalPrestamos: 0, desgloseClientes: [], alertas: [] };
   }
 
   const prestamoIds = prestamos.map(p => p.id);
@@ -327,41 +295,30 @@ export async function getEstadisticasDashboard(userId: string) {
   let capitalRecuperado = 0;
   let gananciaReal = 0;
   let gananciaProyectadaTotal = 0;
-  
-  let metodosPago: Record<string, number> = {
-    efectivo: 0, yape: 0, plin: 0, transferencia: 0
-  };
+  let metodosPago: Record<string, number> = { efectivo: 0, yape: 0, plin: 0, transferencia: 0 };
 
   const desgloseMap = new Map();
-  const alertasCobro: any[] = [];
+  const alertasCobro: any[] = []; 
 
-  // 1. CÁLCULO DE CAPITAL Y PROYECCIÓN A FUTURO
   prestamos.forEach(p => {
      capitalColocado += p.monto_capital;
-     
-     // factorPlazo: Si es préstamo relámpago (días) es x1, si es mensual es x Meses
      const factorPlazo = p.tipo_plazo === 'dias' ? 1 : p.plazo_meses;
      const interesGlobalTotal = p.monto_capital * (p.tasa_interes / 100) * factorPlazo;
      const ratioInversionista = p.tasa_interes > 0 ? (p.tasa_inversionista / p.tasa_interes) : 0;
      
      let miGananciaProyectada = 0;
-
-     if (p.inversionista_id === userId) {
-         miGananciaProyectada = interesGlobalTotal * ratioInversionista;
-     } else if (p.admin_id === userId) {
-         if (p.tipo_fondeo === 'socio') {
-             miGananciaProyectada = interesGlobalTotal * (1 - ratioInversionista);
-         } else {
-             miGananciaProyectada = interesGlobalTotal;
-         }
+     if (p.inversionista_id === userId) miGananciaProyectada = interesGlobalTotal * ratioInversionista;
+     else if (p.admin_id === userId) {
+         if (p.tipo_fondeo === 'socio') miGananciaProyectada = interesGlobalTotal * (1 - ratioInversionista);
+         else miGananciaProyectada = interesGlobalTotal;
      }
 
      gananciaProyectadaTotal += miGananciaProyectada;
 
-     // Guardar datos del cliente para la tabla
      desgloseMap.set(p.id, {
          id: p.id,
          cliente: (p.clientes as any)?.nombre || 'Cliente Desconocido',
+         telefono: (p.clientes as any)?.telefono || '',
          capital: p.monto_capital,
          gananciaProyectada: miGananciaProyectada,
          gananciaReal: 0,
@@ -369,49 +326,38 @@ export async function getEstadisticasDashboard(userId: string) {
      });
   });
 
-  // 2. CÁLCULO DE DINERO YA RECAUDADO (GANANCIA REAL)
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
   cuotas?.forEach(c => {
      const desglose = desgloseMap.get(c.prestamo_id);
      
      if (c.estado === 'pagado') {
         capitalRecuperado += c.amortizacion_capital;
-        
         const p = prestamos.find(pr => pr.id === c.prestamo_id);
         if (p) {
            const ratioInversionista = p.tasa_interes > 0 ? (p.tasa_inversionista / p.tasa_interes) : 0;
            let miGananciaCuota = 0;
-
-           if (p.inversionista_id === userId) {
-              miGananciaCuota = (c.interes * ratioInversionista);
-           } else if (p.admin_id === userId) {
-              if (p.tipo_fondeo === 'socio') {
-                 miGananciaCuota = (c.interes * (1 - ratioInversionista));
-              } else {
-                 miGananciaCuota = c.interes;
-              }
+           if (p.inversionista_id === userId) miGananciaCuota = (c.interes * ratioInversionista);
+           else if (p.admin_id === userId) {
+              if (p.tipo_fondeo === 'socio') miGananciaCuota = (c.interes * (1 - ratioInversionista));
+              else miGananciaCuota = c.interes;
            }
-
            gananciaReal += miGananciaCuota;
-           if (desglose) {
-               desglose.gananciaReal += miGananciaCuota;
-           }
+           if (desglose) desglose.gananciaReal += miGananciaCuota;
         }
-
-        // Gráficos de métodos de pago
         if (c.metodo_pago) {
            const m = c.metodo_pago.toLowerCase();
            if (m.includes('transferencia')) metodosPago['transferencia'] = (metodosPago['transferencia'] || 0) + 1;
            else metodosPago[m] = (metodosPago[m] || 0) + 1;
-        } else if (c.estado === 'pendiente') {
-         // <-- 2. PEGA TODO ESTE BLOQUE DESPUÉS DEL IF DE 'pagado'
-         const hoy = new Date();
-         hoy.setHours(0, 0, 0, 0);
+        }
+     } else if (c.estado === 'pendiente') {
          const vencimiento = new Date(c.fecha_vencimiento + 'T12:00:00Z');
          vencimiento.setHours(0, 0, 0, 0);
          const diffTime = vencimiento.getTime() - hoy.getTime();
          const diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-         if (diasRestantes <= 0) {
+         if (diasRestantes <= 1) {
              alertasCobro.push({
                  cuota_id: c.id,
                  numero_cuota: c.numero_cuota,
@@ -423,7 +369,6 @@ export async function getEstadisticasDashboard(userId: string) {
              });
          }
      }
-     }
   });
 
   return {
@@ -433,7 +378,6 @@ export async function getEstadisticasDashboard(userId: string) {
      gananciaProyectada: gananciaProyectadaTotal,
      metodosPago,
      totalPrestamos: prestamos.length,
-     // Convertimos el Map a Array y ordenamos por ganancia proyectada
      desgloseClientes: Array.from(desgloseMap.values()).sort((a, b) => b.gananciaProyectada - a.gananciaProyectada),
      alertas: alertasCobro.sort((a, b) => a.diasRestantes - b.diasRestantes)
   };
