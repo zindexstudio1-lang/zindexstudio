@@ -108,12 +108,19 @@ export default function DashboardLayout({
             Central Inversionistas
           </Link>
 
-          <Link href="/dashboard/simulador" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-xl transition-all">
-               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
-             </svg>
-            Simulador Créditos
-           </Link>
+          <Link 
+  href="/dashboard/simulador" 
+  className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all ${
+    pathname === '/dashboard/simulador' 
+      ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
+      : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-transparent'
+  }`}
+>
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
+  </svg>
+  Simulador Créditos
+</Link>
 
           <div className="pt-4 pb-2">
             <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider px-3">Sistemas</p>
@@ -126,20 +133,27 @@ export default function DashboardLayout({
 
         {/* PERFIL DE USUARIO Y BOTÓN DE SALIDA */}
         <div className="p-4 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/20 mt-auto">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow-lg uppercase">
+          
+          {/* AHORA ES UN LINK HACIA EL PERFIL */}
+          <Link 
+            href="/dashboard/perfil"
+            className="flex items-center gap-3 overflow-hidden flex-1 group hover:bg-zinc-800/60 p-1.5 -ml-1.5 rounded-xl transition-all cursor-pointer"
+            title="Ir a Configuración de Perfil"
+          >
+            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow-lg uppercase group-hover:shadow-indigo-500/25 transition-all">
               {userData.email.charAt(0)}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium text-white truncate w-full" title={userData.email}>
+              <span className="text-sm font-medium text-white truncate w-full group-hover:text-indigo-400 transition-colors" title={userData.email}>
                 {userData.email.split('@')[0]}
               </span>
               <span className={`text-xs mt-0.5 font-medium ${userData.role === 'super_admin' ? 'text-indigo-400' : 'text-zinc-500'}`}>
                 {userData.role.replace('_', ' ')}
               </span>
             </div>
-          </div>
+          </Link>
 
+          {/* BOTÓN DE SALIR (INTACTO) */}
           <button 
             onClick={async () => {
               const supabase = createClient();
@@ -147,7 +161,7 @@ export default function DashboardLayout({
               window.location.href = "/";
             }}
             title="Cerrar Sesión"
-            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"
+            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0 ml-2"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />

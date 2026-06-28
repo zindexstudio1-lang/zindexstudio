@@ -496,8 +496,8 @@ export default function InversionistasPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tipo de Plazo</label>
-                      <select name="tipo_plazo" value={tipoPlazoFormulario} onChange={(e) => setTipoPlazoFormulario(e.target.value)} className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors">
+                      <label htmlFor="tipo_plazo" className="block text-xs font-medium text-zinc-400 mb-1.5">Tipo de Plazo</label>
+                      <select id="tipo_plazo" name="tipo_plazo" value={tipoPlazoFormulario} onChange={(e) => setTipoPlazoFormulario(e.target.value)} className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors">
                         <option value="meses">Meses (Alemán)</option>
                         <option value="dias">Días (Relámpago)</option>
                       </select>
@@ -684,8 +684,8 @@ export default function InversionistasPage() {
                 </div>
 
                 <div className="mt-4 mb-4">
-                  <label className="block text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">Canal de Recepción</label>
-                  <select name="metodo_pago" required className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-emerald-500 transition-colors">
+                  <label htmlFor="metodo_pago" className="block text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">Canal de Recepción</label>
+                  <select id="metodo_pago" name="metodo_pago" required className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-emerald-500 transition-colors">
                     <option value="efectivo">Efectivo Físico</option>
                     <option value="yape">Yape</option>
                     <option value="plin">Plin</option>
@@ -736,8 +736,8 @@ export default function InversionistasPage() {
                 <p className="text-xs text-blue-400 bg-blue-500/10 p-3 rounded-xl border border-blue-500/20">Aquí puedes corregir el canal por donde te pagaron o la fecha. Si lo que necesitas es cambiar de Pago Completo a Solo Interés (o viceversa), por favor usa el botón "Deshacer" en la tabla.</p>
                 
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">Canal Correcto de Recepción</label>
-                  <select name="metodo_pago" required defaultValue={cuotaToEdit.metodo_pago || 'efectivo'} className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-emerald-500 transition-colors">
+                  <label htmlFor="metodo_pago" className="block text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">Canal Correcto de Recepción</label>
+                  <select id="metodo_pago" name="metodo_pago" required title="Canal Correcto de Recepción" defaultValue={cuotaToEdit.metodo_pago || 'efectivo'} className="w-full px-3 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-emerald-500 transition-colors">
                     <option value="efectivo">Efectivo Físico</option>
                     <option value="yape">Yape</option>
                     <option value="plin">Plin</option>
@@ -748,8 +748,8 @@ export default function InversionistasPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1.5">Fecha Real de Ingreso</label>
-                  <input type="date" name="fecha_pago_real" required defaultValue={cuotaToEdit.fecha_pago_real || ''} className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-blue-500" />
+                  <label htmlFor="fecha_pago_real" className="block text-xs font-medium text-zinc-400 mb-1.5">Fecha Real de Ingreso</label>
+                  <input id="fecha_pago_real" type="date" name="fecha_pago_real" required title="Fecha Real de Ingreso" defaultValue={cuotaToEdit.fecha_pago_real || ''} className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-blue-500" />
                 </div>
               </div>
               <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex justify-end gap-3">

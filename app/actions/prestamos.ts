@@ -413,3 +413,19 @@ export async function getPrestamoPublico(prestamoId: string) {
     return { error: "Error de servidor al cargar el portal." };
   }
 }
+
+export async function getDatosExportacion(adminId: string) {
+  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('clientes')
+      .select('id, nombre, documento, telefono, prestamos(id)')
+      .eq('admin_id', adminId);
+      
+    if (error) return { error: error.message };
+    return { data: data || [] };
+  } catch (error: any) {
+    return { error: "Error interno al exportar datos." };
+  }
+}
