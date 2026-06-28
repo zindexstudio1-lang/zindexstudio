@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { getEstadisticasDashboard } from "@/app/actions/prestamos";
+import { getEstadisticasDashboard, getCuotasPorPrestamo } from "@/app/actions/prestamos";
 
 export default function DashboardOverview() {
   const [userName, setUserName] = useState("Cargando...");
@@ -12,6 +12,11 @@ export default function DashboardOverview() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [filtroOrigen, setFiltroOrigen] = useState("todos");
+
+  // --- ESTADOS PARA EL MODAL DE AUDITORÍA ---
+  const [selectedHistorial, setSelectedHistorial] = useState<any>(null);
+  const [cuotasHistorial, setCuotasHistorial] = useState<any[]>([]);
+  const [isLoadingHistorial, setIsLoadingHistorial] = useState(false);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -54,16 +59,28 @@ export default function DashboardOverview() {
     window.open(`https://wa.me/${numLimpio}?text=${encodeURIComponent(msg).replace(/%25/g, '%')}`, '_blank');
   };
 
+  // Función para abrir el modal del historial
+  const abrirAuditoria = async (cliente: any) => {
+    setSelectedHistorial(cliente);
+    setIsLoadingHistorial(true);
+    try {
+      const data = await getCuotasPorPrestamo(cliente.id);
+      setCuotasHistorial(data || []);
+    } catch (e) {
+      console.error(e);
+    }
+    setIsLoadingHistorial(false);
+  };
+
   const totalPagos = stats ? Object.values(stats.metodosPago).reduce((a: any, b: any) => a + b, 0) as number : 0;
   const getPorcentaje = (cantidad: number) => totalPagos === 0 ? 0 : Math.round((cantidad / totalPagos) * 100);
   const progresoCapital = stats && stats.capitalColocado > 0 ? Math.min(100, Math.round((stats.capitalRecuperado / stats.capitalColocado) * 100)) : 0;
 
-  // --- FILTROS INTELIGENTES PARA SEPARAR ACTIVOS DE FINALIZADOS ---
   const clientesActivos = stats?.desgloseClientes?.filter((c: any) => c.estado !== 'pagado') || [];
   const clientesFinalizados = stats?.desgloseClientes?.filter((c: any) => c.estado === 'pagado') || [];
 
   return (
-    <div className="p-4 md:p-8 animate-in fade-in duration-500">
+    <div className="p-4 md:p-8 animate-in fade-in duration-500 relative">
       <div className="mb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 capitalize">
           Bienvenido, <span className="text-indigo-400">{userName}</span>
@@ -145,7 +162,6 @@ export default function DashboardOverview() {
                 <svg className="w-16 h-16 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
               </div>
               <p className="text-sm font-medium text-zinc-400 mb-1">Contratos Activos (Con Deuda)</p>
-              {/* AHORA SOLO CUENTA A LOS ACTIVOS */}
               <h2 className="text-3xl font-bold text-white mb-2">{clientesActivos.length}</h2>
               <p className="text-xs text-amber-500/70 font-medium">De un histórico de {stats.totalPrestamos} operaciones</p>
             </div>
@@ -214,7 +230,7 @@ export default function DashboardOverview() {
             </div>
           </div>
 
-          {/* TABLA 2: HISTORIAL DE FINALIZADOS */}
+          {/* TABLA 2: HISTORIAL DE FINALIZADOS (CON AUDITORÍA INTERNA) */}
           {clientesFinalizados.length > 0 && (
             <div className="bg-zinc-950/40 border border-zinc-800/50 rounded-2xl shadow-lg shadow-black/20 overflow-hidden mt-6 opacity-70 hover:opacity-100 transition-opacity">
               <div className="p-5 border-b border-zinc-800/50 bg-zinc-950/80 flex items-center justify-between">
@@ -232,7 +248,8 @@ export default function DashboardOverview() {
                       <th className="px-6 py-3 font-semibold text-left whitespace-nowrap">Cliente</th>
                       <th className="px-6 py-3 font-semibold text-center whitespace-nowrap">Capital Retornado</th>
                       <th className="px-6 py-3 font-semibold text-center whitespace-nowrap">Ganancia Obtenida</th>
-                      <th className="px-6 py-3 font-semibold text-right whitespace-nowrap">Estado</th>
+                      <th className="px-6 py-3 font-semibold text-center whitespace-nowrap">Estado</th>
+                      <th className="px-6 py-3 font-semibold text-right whitespace-nowrap">Auditoría</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/30">
@@ -248,10 +265,23 @@ export default function DashboardOverview() {
                         <td className="px-6 py-3 text-center whitespace-nowrap font-bold text-emerald-500/50">
                           S/ {cliente.gananciaReal.toFixed(2)}
                         </td>
-                        <td className="px-6 py-3 text-right whitespace-nowrap">
+                        <td className="px-6 py-3 text-center whitespace-nowrap">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 border border-zinc-700/50 px-2 py-1 rounded">
                             Liquidado
                           </span>
+                        </td>
+                        <td className="px-6 py-3 text-right whitespace-nowrap">
+                          {/* BOTÓN DEL OJITO PARA ABRIR MODAL INTERNO */}
+                          <button 
+                            onClick={() => abrirAuditoria(cliente)}
+                            className="inline-flex p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-indigo-400 transition-all"
+                            title="Ver Auditoría Interna"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -358,9 +388,98 @@ export default function DashboardOverview() {
               <svg className="w-5 h-5 text-zinc-600 group-hover:text-purple-400 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
             </Link>
           </div>
-
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* MODAL INTERNO DE AUDITORÍA (HISTORIAL) - DISEÑO PREMIUM Z-INDEX STUDIO */}
+      {/* ========================================================================= */}
+      {selectedHistorial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedHistorial(null)}></div>
+          
+          <div className="relative z-10 w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+            {/* Cabecera del Modal */}
+            <div className="flex items-center justify-between p-5 md:p-6 border-b border-zinc-800 bg-zinc-900/50">
+              <div>
+                <h2 className="text-lg md:text-xl font-bold text-white">Auditoría de Retornos (Finalizado)</h2>
+                <p className="text-xs md:text-sm text-zinc-400 mt-1">Cliente: <span className="text-indigo-400 font-semibold">{selectedHistorial.cliente}</span></p>
+              </div>
+              <button onClick={() => setSelectedHistorial(null)} className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Cuerpo del Modal (Tabla de Cuotas) */}
+            <div className="p-5 md:p-6 overflow-y-auto no-scrollbar flex-1 bg-zinc-950">
+              {isLoadingHistorial ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+                </div>
+              ) : cuotasHistorial.length === 0 ? (
+                <div className="text-center py-10 text-zinc-500">No se encontraron cuotas para este contrato.</div>
+              ) : (
+                <div className="overflow-x-auto no-scrollbar border border-zinc-800/50 rounded-xl">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-[10px] uppercase bg-zinc-900/80 text-zinc-400 border-b border-zinc-800/50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-center">N°</th>
+                        <th className="px-4 py-3 font-semibold text-center">Dev. Capital</th>
+                        <th className="px-4 py-3 font-semibold text-center">Mi Ganancia</th>
+                        <th className="px-4 py-3 font-semibold text-center text-emerald-500">Total Pagado</th>
+                        <th className="px-4 py-3 font-semibold text-center">Fecha Pago</th>
+                        <th className="px-4 py-3 font-semibold text-center">Método</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-800/30 text-zinc-300">
+                      {cuotasHistorial.map((cuota, index) => (
+                        <tr key={cuota.id} className="hover:bg-zinc-900/30 transition-colors">
+                          <td className="px-4 py-3 text-center font-medium">{index + 1}</td>
+                          
+                          {/* SALVAVIDAS APLICADO: (Number(...) || 0) EVITA EL ERROR DE UNDEFINED */}
+                          <td className="px-4 py-3 text-center text-zinc-500">
+                            S/ {(Number(cuota.monto_capital) || 0).toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-center text-zinc-500">
+                            S/ {(Number(cuota.monto_interes) || 0).toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-center font-bold text-emerald-400">
+                            S/ {(Number(cuota.monto_total) || 0).toFixed(2)}
+                          </td>
+                          
+                          <td className="px-4 py-3 text-center text-xs">
+                            {cuota.fecha_pago_real ? new Date(cuota.fecha_pago_real).toLocaleDateString('es-ES') : 'N/A'}
+                          </td>
+                          <td className="px-4 py-3 text-center text-xs font-bold capitalize">
+                            <span className={`px-2 py-1 rounded-md border ${
+                              cuota.metodo_pago === 'yape' ? 'text-[#74246D] bg-[#74246D]/10 border-[#74246D]/20' :
+                              cuota.metodo_pago === 'plin' ? 'text-[#00E1C2] bg-[#00E1C2]/10 border-[#00E1C2]/20' :
+                              cuota.metodo_pago === 'efectivo' ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' :
+                              'text-blue-500 bg-blue-500/10 border-blue-500/20'
+                            }`}>
+                              {cuota.metodo_pago || 'Pagado'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            
+            {/* Footer del Modal */}
+            <div className="p-4 md:p-5 border-t border-zinc-800 bg-zinc-900/50 flex justify-end">
+              <button onClick={() => setSelectedHistorial(null)} className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-bold rounded-lg transition-colors">
+                Cerrar Auditoría
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
