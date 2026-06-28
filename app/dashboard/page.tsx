@@ -58,6 +58,10 @@ export default function DashboardOverview() {
   const getPorcentaje = (cantidad: number) => totalPagos === 0 ? 0 : Math.round((cantidad / totalPagos) * 100);
   const progresoCapital = stats && stats.capitalColocado > 0 ? Math.min(100, Math.round((stats.capitalRecuperado / stats.capitalColocado) * 100)) : 0;
 
+  // --- FILTROS INTELIGENTES PARA SEPARAR ACTIVOS DE FINALIZADOS ---
+  const clientesActivos = stats?.desgloseClientes?.filter((c: any) => c.estado !== 'pagado') || [];
+  const clientesFinalizados = stats?.desgloseClientes?.filter((c: any) => c.estado === 'pagado') || [];
+
   return (
     <div className="p-4 md:p-8 animate-in fade-in duration-500">
       <div className="mb-6">
@@ -118,7 +122,7 @@ export default function DashboardOverview() {
               <h2 className="text-3xl font-bold text-white mb-2">S/ {stats.capitalColocado.toFixed(2)}</h2>
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full animate-pulse ${filtroOrigen === 'propio' ? 'bg-blue-500' : filtroOrigen === 'socio' ? 'bg-purple-500' : 'bg-indigo-500'}`}></span>
-                <p className={`text-xs font-medium ${filtroOrigen === 'propio' ? 'text-blue-400' : filtroOrigen === 'socio' ? 'text-purple-400' : 'text-indigo-400'}`}>Dinero trabajando actualmente</p>
+                <p className={`text-xs font-medium ${filtroOrigen === 'propio' ? 'text-blue-400' : filtroOrigen === 'socio' ? 'text-purple-400' : 'text-indigo-400'}`}>Dinero trabajando o recuperado</p>
               </div>
             </div>
 
@@ -140,16 +144,18 @@ export default function DashboardOverview() {
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <svg className="w-16 h-16 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
               </div>
-              <p className="text-sm font-medium text-zinc-400 mb-1">Contratos Activos</p>
-              <h2 className="text-3xl font-bold text-white mb-2">{stats.totalPrestamos}</h2>
-              <p className="text-xs text-amber-500/70 font-medium">Préstamos y fondeos en esta cartera</p>
+              <p className="text-sm font-medium text-zinc-400 mb-1">Contratos Activos (Con Deuda)</p>
+              {/* AHORA SOLO CUENTA A LOS ACTIVOS */}
+              <h2 className="text-3xl font-bold text-white mb-2">{clientesActivos.length}</h2>
+              <p className="text-xs text-amber-500/70 font-medium">De un histórico de {stats.totalPrestamos} operaciones</p>
             </div>
           </div>
 
+          {/* TABLA 1: RADIOGRAFÍA DE ACTIVOS */}
           <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl shadow-lg shadow-black/20 overflow-hidden mt-6">
             <div className="p-5 border-b border-zinc-800 bg-zinc-950/50">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Radiografía de Rendimientos (Mi Tajada)</h3>
-              <p className="text-xs text-zinc-500 mt-1">Detalle de tu ganancia limpia proyectada por cada cliente activo.</p>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Radiografía de Rendimientos (En Curso)</h3>
+              <p className="text-xs text-zinc-500 mt-1">Detalle de tu ganancia limpia proyectada por cada cliente con deuda activa.</p>
             </div>
             
             <div className="overflow-x-auto no-scrollbar">
@@ -164,12 +170,12 @@ export default function DashboardOverview() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/60">
-                  {stats.desgloseClientes.length === 0 ? (
+                  {clientesActivos.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-6 py-8 text-center text-zinc-500 whitespace-nowrap">No hay contratos activos para mostrar en este filtro.</td>
                     </tr>
                   ) : (
-                    stats.desgloseClientes.map((cliente: any) => {
+                    clientesActivos.map((cliente: any) => {
                       const porcentajeCobrado = cliente.gananciaProyectada > 0 
                         ? Math.min(100, Math.round((cliente.gananciaReal / cliente.gananciaProyectada) * 100)) 
                         : 0;
@@ -207,6 +213,53 @@ export default function DashboardOverview() {
               </table>
             </div>
           </div>
+
+          {/* TABLA 2: HISTORIAL DE FINALIZADOS */}
+          {clientesFinalizados.length > 0 && (
+            <div className="bg-zinc-950/40 border border-zinc-800/50 rounded-2xl shadow-lg shadow-black/20 overflow-hidden mt-6 opacity-70 hover:opacity-100 transition-opacity">
+              <div className="p-5 border-b border-zinc-800/50 bg-zinc-950/80 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Historial de Éxito (Finalizados)</h3>
+                  <p className="text-xs text-zinc-600 mt-1">Clientes que ya liquidaron su deuda al 100%.</p>
+                </div>
+                <span className="bg-zinc-800 text-zinc-400 text-xs px-2 py-1 rounded-md font-bold">{clientesFinalizados.length}</span>
+              </div>
+              
+              <div className="overflow-x-auto no-scrollbar">
+                <table className="w-full text-sm text-zinc-500">
+                  <thead className="text-[10px] uppercase bg-zinc-950/30 text-zinc-600 border-b border-zinc-800/50">
+                    <tr>
+                      <th className="px-6 py-3 font-semibold text-left whitespace-nowrap">Cliente</th>
+                      <th className="px-6 py-3 font-semibold text-center whitespace-nowrap">Capital Retornado</th>
+                      <th className="px-6 py-3 font-semibold text-center whitespace-nowrap">Ganancia Obtenida</th>
+                      <th className="px-6 py-3 font-semibold text-right whitespace-nowrap">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/30">
+                    {clientesFinalizados.map((cliente: any) => (
+                      <tr key={cliente.id} className="hover:bg-zinc-900/30 transition-colors">
+                        <td className="px-6 py-3 whitespace-nowrap">
+                          <p className="font-bold text-zinc-300">{cliente.cliente}</p>
+                          <p className="text-[10px] text-zinc-600 mt-0.5">{cliente.tipoFondeo}</p>
+                        </td>
+                        <td className="px-6 py-3 text-center font-medium whitespace-nowrap">
+                          S/ {cliente.capital.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-3 text-center whitespace-nowrap font-bold text-emerald-500/50">
+                          S/ {cliente.gananciaReal.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-3 text-right whitespace-nowrap">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 border border-zinc-700/50 px-2 py-1 rounded">
+                            Liquidado
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 shadow-lg shadow-black/20">

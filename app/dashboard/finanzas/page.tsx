@@ -35,6 +35,7 @@ export default function FinanzasPage() {
 
   const [isEditPagoModalOpen, setIsEditPagoModalOpen] = useState(false);
   const [cuotaToEdit, setCuotaToEdit] = useState<any>(null);
+  const [cuotaToUndo, setCuotaToUndo] = useState<string | null>(null);
 
   const [prestamoToDelete, setPrestamoToDelete] = useState<string | null>(null);
 
@@ -68,8 +69,9 @@ export default function FinanzasPage() {
     return p.tipo_fondeo === filtroOrigen;
   });
   
-  const prestamosUnMes = prestamosFiltrados.filter(p => p.tipo_plazo === 'dias' || p.plazo_meses <= 1);
-  const prestamosVariosMeses = prestamosFiltrados.filter(p => p.tipo_plazo !== 'dias' && p.plazo_meses > 1);
+ const prestamosActivos = prestamosFiltrados.filter(p => p.estado !== 'pagado');
+const prestamosUnMes = prestamosActivos.filter(p => p.tipo_plazo === 'dias' || p.plazo_meses <= 1);
+const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias' && p.plazo_meses > 1);
 
   const handleVerCuotas = async (prestamo: any) => {
     setSelectedPrestamo(prestamo);
@@ -138,6 +140,7 @@ export default function FinanzasPage() {
       const updatedCuotas = await getCuotasPorPrestamo(selectedPrestamo.id);
       setCuotasList(updatedCuotas);
       setIsPagoModalOpen(false);
+      await refreshData();
     }
     setIsProcessingPago(false);
   };
@@ -154,22 +157,27 @@ export default function FinanzasPage() {
       const updatedCuotas = await getCuotasPorPrestamo(selectedPrestamo.id);
       setCuotasList(updatedCuotas);
       setIsEditPagoModalOpen(false);
+      await refreshData();
     }
     setIsProcessingPago(false);
   };
 
-  const handleAnularPago = async (cuotaId: string) => {
-    if (!window.confirm("¿Estás súper seguro de deshacer este pago? La cuota volverá a estar Pendiente. ATENCIÓN: Si este cobro fue un Reenganche (Solo Interés), tendrás que ajustar tu base de datos manualmente.")) return;
-    
+  // Esta función se activará cuando le den "Sí, Deshacer" en el nuevo diseño
+  const confirmarDeshacer = async () => {
+    if (!cuotaToUndo) return;
     setIsLoadingCuotas(true);
-    const result = await anularPagoCuota(cuotaId);
+    
+    const result = await anularPagoCuota(cuotaToUndo);
     
     if (result?.error) {
       alert("Error al deshacer: " + result.error);
     } else {
       const updatedCuotas = await getCuotasPorPrestamo(selectedPrestamo.id);
       setCuotasList(updatedCuotas);
+      await refreshData(); // Tu refresh que acabas de agregar
     }
+    
+    setCuotaToUndo(null); // Oculta el diseño al terminar
     setIsLoadingCuotas(false);
   };
 
@@ -227,12 +235,13 @@ export default function FinanzasPage() {
                     <th className="px-6 py-4 font-semibold text-center">Capital Colocado</th>
                     <th className="px-6 py-4 font-semibold text-center">Plazo / Interés</th>
                     <th className="px-6 py-4 font-semibold text-center">Desembolso</th>
+                    <th className="px-6 py-4 font-semibold text-center">Estado</th>
                     <th className="px-6 py-4 font-semibold text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/80">
                   {prestamosUnMes.map((p) => (
-                    <tr key={p.id} className="hover:bg-zinc-800/20 transition-colors">
+                    <tr key={p.id} className={`hover:bg-zinc-800/20 transition-all ${p.estado === 'pagado' ? 'opacity-40 grayscale' : ''}`}>
                       <td className="px-6 py-4 font-medium text-white whitespace-nowrap">
                         <div className="flex flex-col">
                           <span>{p.clientes?.nombre || "N/A"}</span>
@@ -249,6 +258,19 @@ export default function FinanzasPage() {
                         <span className="font-medium text-indigo-300">{p.tipo_plazo === 'dias' ? `${p.plazo_meses} días` : `${p.plazo_meses} meses`}</span> / {p.tasa_interes}%
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">{p.fecha_desembolso}</td>
+
+                      <td className="px-6 py-4 text-center whitespace-nowrap">
+  {p.estado === 'pagado' ? (
+    <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      Cancelado
+    </span>
+  ) : (
+    <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+      En Curso
+    </span>
+  )}
+</td>
+
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-2">
                           <button onClick={() => handleVerCuotas(p)} title="Ver Cronograma" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-indigo-500/10 hover:text-indigo-400 rounded-md transition-all">
@@ -307,12 +329,13 @@ export default function FinanzasPage() {
                     <th className="px-6 py-4 font-semibold text-center">Capital Colocado</th>
                     <th className="px-6 py-4 font-semibold text-center">Plazo / Interés</th>
                     <th className="px-6 py-4 font-semibold text-center">Desembolso</th>
+                    <th className="px-6 py-4 font-semibold text-center">Estado</th>
                     <th className="px-6 py-4 font-semibold text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/80">
                   {prestamosVariosMeses.map((p) => (
-                    <tr key={p.id} className="hover:bg-zinc-800/20 transition-colors">
+                    <tr key={p.id} className={`hover:bg-zinc-800/20 transition-all ${p.estado === 'pagado' ? 'opacity-40 grayscale' : ''}`}>
                       <td className="px-6 py-4 font-medium text-white whitespace-nowrap">
                         <div className="flex flex-col">
                           <span>{p.clientes?.nombre || "N/A"}</span>
@@ -329,6 +352,19 @@ export default function FinanzasPage() {
                         <span className="font-medium text-zinc-300">{p.plazo_meses} meses</span> / {p.tasa_interes}%
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">{p.fecha_desembolso}</td>
+
+                      <td className="px-6 py-4 text-center whitespace-nowrap">
+  {p.estado === 'pagado' ? (
+    <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      Cancelado
+    </span>
+  ) : (
+    <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+      En Curso
+    </span>
+  )}
+</td>
+
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center gap-2">
                           <button onClick={() => handleVerCuotas(p)} title="Ver Cronograma" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-indigo-500/10 hover:text-indigo-400 rounded-md transition-all">
@@ -460,7 +496,10 @@ export default function FinanzasPage() {
                               <div className="flex gap-2">
                                 <button onClick={() => { setCuotaToEdit(cuota); setIsEditPagoModalOpen(true); }} className="text-[10px] font-medium text-blue-400/80 hover:text-blue-400 hover:underline transition-colors">Editar</button>
                                 <span className="text-zinc-600 text-[10px]">|</span>
-                                <button onClick={() => handleAnularPago(cuota.id)} className="text-[10px] font-medium text-red-400/80 hover:text-red-400 hover:underline transition-colors">Deshacer</button>
+                                {/* Solo cambia el onClick de tu botón actual por este: */}
+<button onClick={() => setCuotaToUndo(cuota.id)} className="text-[10px] font-medium text-red-400/80 hover:text-red-400 hover:underline transition-colors">
+  Deshacer
+</button>
                               </div>
                             </div>
                           )}
@@ -586,17 +625,27 @@ export default function FinanzasPage() {
         </div>
       )}
 
-      {prestamoToDelete && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setPrestamoToDelete(null)}></div>
-          <div className="relative z-10 w-full max-w-sm bg-zinc-900 border border-red-900/50 rounded-2xl overflow-hidden shadow-2xl">
+      {/* NUEVO DISEÑO PARA DESHACER (Reemplaza al window.confirm) */}
+      {cuotaToUndo && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setCuotaToUndo(null)}></div>
+          <div className="relative z-10 w-full max-w-sm bg-zinc-900 border border-amber-900/50 rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="p-6 text-center space-y-4">
-              <h2 className="text-xl font-bold text-white mt-4">¿Anular Contrato?</h2>
-              <p className="text-sm text-zinc-400">Esta acción eliminará el cronograma entero y no se puede deshacer.</p>
+              <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-inner">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white">¿Deshacer Pago?</h2>
+              <p className="text-sm text-zinc-400">La cuota volverá a estar Pendiente en el sistema.</p>
             </div>
             <div className="p-4 bg-zinc-950/50 border-t border-zinc-800 flex gap-3">
-              <button onClick={() => setPrestamoToDelete(null)} className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-lg">Cancelar</button>
-              <button onClick={confirmarEliminacion} className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-500 rounded-lg">Sí, Eliminar</button>
+              <button onClick={() => setCuotaToUndo(null)} className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors">
+                Cancelar
+              </button>
+              <button onClick={confirmarDeshacer} className="flex-1 px-4 py-2.5 text-sm font-bold text-amber-950 bg-amber-500 hover:bg-amber-400 rounded-lg transition-colors shadow-lg shadow-amber-500/20">
+                Sí, Deshacer
+              </button>
             </div>
           </div>
         </div>

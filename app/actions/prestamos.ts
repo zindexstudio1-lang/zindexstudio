@@ -209,9 +209,25 @@ export async function procesarPagoCuota(formData: FormData) {
         estado: 'pagado', fecha_pago_real: fechaPagoReal, mora_aplicada: moraAplicada, tipo_pago: 'solo_interes', metodo_pago: metodoPago, amortizacion_capital: 0, monto_total: parseFloat(nuevoMontoTotal.toFixed(2))
       }).eq("id", cuotaId);
     }
+
+    // ... (todo tu código anterior de procesarPagoCuota)
+    
+    // --- INICIO CÓDIGO NUEVO: AUTO-CANCELAR CONTRATO ---
+    const { count } = await supabaseAdmin
+      .from("cuotas")
+      .select("*", { count: 'exact', head: true })
+      .eq("prestamo_id", prestamoId)
+      .eq("estado", "pendiente");
+
+    // Si ya no quedan cuotas pendientes, marcamos el préstamo matriz como pagado
+    if (count === 0) {
+      await supabaseAdmin.from("prestamos").update({ estado: 'pagado' }).eq("id", prestamoId);
+    }
+    // --- FIN CÓDIGO NUEVO ---
+
     revalidatePath("/dashboard/finanzas");
     return { success: true };
-  } catch (error: any) {
+  } catch (error: any) {  
     return { error: error.message || "Error interno al procesar la transacción." };
   }
 }
@@ -255,10 +271,20 @@ export async function getPrestamosComoInversionista(inversionistaId: string) {
 export async function anularPagoCuota(cuotaId: string) {
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   try {
+    // 1. Buscamos a qué préstamo pertenece esta cuota ANTES de modificarla
+    const { data: cuota } = await supabaseAdmin.from("cuotas").select("prestamo_id").eq("id", cuotaId).single();
+
+    // 2. Anulamos el pago
     const { error } = await supabaseAdmin.from("cuotas").update({
       estado: 'pendiente', fecha_pago_real: null, mora_aplicada: 0, tipo_pago: null, metodo_pago: null
     }).eq("id", cuotaId);
     if (error) throw new Error(error.message);
+
+    // 3. Reactivamos el préstamo maestro (por si estaba marcado como Cancelado)
+    if (cuota) {
+      await supabaseAdmin.from("prestamos").update({ estado: 'activo' }).eq("id", cuota.prestamo_id);
+    }
+
     return { success: true };
   } catch (error: any) {
     return { error: error.message || "Error al intentar deshacer el pago." };
@@ -272,7 +298,7 @@ export async function getEstadisticasDashboard(userId: string, filtroOrigen: str
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   
   const { data: prestamosDb } = await supabaseAdmin.from("prestamos")
-    .select("id, monto_capital, tasa_interes, tasa_inversionista, tipo_plazo, plazo_meses, tipo_fondeo, admin_id, inversionista_id, clientes(nombre, telefono)")
+    .select("id, monto_capital, tasa_interes, tasa_inversionista, tipo_plazo, plazo_meses, tipo_fondeo, estado, admin_id, inversionista_id, clientes(nombre, telefono)")
     .or(`admin_id.eq.${userId},inversionista_id.eq.${userId}`);
 
   let prestamos = prestamosDb || [];
@@ -322,7 +348,8 @@ export async function getEstadisticasDashboard(userId: string, filtroOrigen: str
          capital: p.monto_capital,
          gananciaProyectada: miGananciaProyectada,
          gananciaReal: 0,
-         tipoFondeo: p.tipo_fondeo === 'socio' && p.admin_id === userId ? 'Dinero de Socio' : 'Mi Propio Dinero'
+         tipoFondeo: p.tipo_fondeo === 'socio' && p.admin_id === userId ? 'Dinero de Socio' : 'Mi Propio Dinero',
+         estado: p.estado
      });
   });
 
