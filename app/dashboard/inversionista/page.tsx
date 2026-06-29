@@ -208,6 +208,28 @@ const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias
       alert("⚠️ Este cliente no tiene un número de teléfono registrado.");
       return;
     }
+  
+    // --- NUEVA FUNCIÓN: ENVÍO DE CRONOGRAMA LEYENDO LA PLANTILLA DEL USUARIO ---
+  const enviarMensajeCronograma = (p: any) => {
+    const link = `${window.location.origin}/cronograma/${p.id}`;
+    const nombreCliente = (p.clientes as any)?.nombre || "Cliente";
+    
+    // 1. Lee la plantilla del usuario que inició sesión. Si por algún motivo está vacía, usa la estándar.
+    const plantilla = currentUser?.user_metadata?.msgCronograma || "Hola *{{nombre}}*, tu crédito ha sido aprobado. Aquí tienes el link a tu cronograma digital: {{link}}";
+    
+    // 2. Reemplaza las variables mágicas por los datos reales del cliente
+    let mensajeTexto = plantilla
+      .replace("{{nombre}}", nombreCliente)
+      .replace("{{link}}", link);
+      
+    // 3. Limpia el teléfono y envía el mensaje
+    const telefonoBruto = (p.clientes as any)?.telefono || "";
+    let numLimpio = telefonoBruto.replace(/\D/g, '');
+    if (numLimpio.length === 9) numLimpio = '51' + numLimpio; 
+    
+    const url = `https://wa.me/${numLimpio}?text=${encodeURIComponent(mensajeTexto)}`;
+    window.open(url, '_blank');
+  };
 
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -245,6 +267,37 @@ const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias
     const url = `https://wa.me/${numLimpio}?text=${textoFinal}`;
     window.open(url, '_blank');
   };
+
+  function enviarMensajeCronograma(p: any): void {
+    const telefono = (p.clientes as any)?.telefono || "";
+    const nombreCliente = (p.clientes as any)?.nombre || "Cliente";
+
+    if (!telefono) {
+      alert("⚠️ Este cliente no tiene un número de teléfono registrado.");
+      return;
+    }
+
+    const link = `${window.location.origin}/cronograma/${p.id}`;
+    const plantilla = currentUser?.user_metadata?.msgCronograma ||
+      "Hola *{{nombre}}*, te comparto el link a tu cronograma digital: {{link}}\n\nRevisa tus fechas de pago y contáctanos si tienes dudas.";
+
+    const mensajeTexto = plantilla
+      .replace(/{{nombre}}/g, nombreCliente)
+      .replace(/{{link}}/g, link)
+      .trim();
+
+    let numLimpio = telefono.replace(/\D/g, '');
+    if (numLimpio.length === 9) numLimpio = '51' + numLimpio;
+    if (numLimpio.length === 10 && numLimpio.startsWith('0')) numLimpio = '51' + numLimpio.slice(1);
+
+    if (numLimpio.length < 10) {
+      alert("⚠️ Número de teléfono inválido para enviar WhatsApp.");
+      return;
+    }
+
+    const url = `https://wa.me/${numLimpio}?text=${encodeURIComponent(mensajeTexto)}`;
+    window.open(url, '_blank');
+  }
 
   return (
     <div className="p-4 md:p-8 relative">
@@ -337,28 +390,14 @@ const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias
                           <BotonTerminos clienteNombre={(p.clientes as any)?.nombre} telefono={(p.clientes as any)?.telefono} />
 
                           <button 
-  onClick={() => {
-    const link = `${window.location.origin}/cronograma/${p.id}`;
-    // Usamos el texto ya convertido a formato URL para evitar errores de codificación
-    const mensajeSeguro = `%C2%A1Hola!%20%F0%9F%93%84%20Aqu%C3%AD%20tienes%20tu%20acceso%20seguro%20para%20revisar%20el%20estado%20de%20tu%20financiamiento%20en%20tiempo%20real%3A%0A%0A%F0%9F%94%97%20${encodeURIComponent(link)}%0A%0AGuarda%20este%20enlace%20para%20consultar%20tus%20cuotas%20cuando%20lo%20necesites.`;
-    
-    const telefonoBruto = (p.clientes as any)?.telefono || "";
-    let numLimpio = telefonoBruto.replace(/\D/g, '');
-    if (numLimpio.length === 9) numLimpio = '51' + numLimpio; 
-    
-    if (numLimpio) {
-      window.open(`https://wa.me/${numLimpio}?text=${mensajeSeguro}`, '_blank');
-    } else {
-      window.open(`https://wa.me/?text=${mensajeSeguro}`, '_blank');
-    }
-  }} 
-  title="Enviar Link por WhatsApp" 
-  className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/20 hover:text-emerald-300 rounded-md transition-all"
->
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-  </svg>
-</button>
+                            onClick={() => enviarMensajeCronograma(p)} 
+                            title="Enviar Link por WhatsApp" 
+                            className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/10 hover:text-emerald-400 rounded-md transition-all"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                            </svg>
+                          </button>
 
                           
                           <button onClick={() => setPrestamoToDelete(p.id)} title="Eliminar Contrato" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-all">
@@ -425,29 +464,14 @@ const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias
                           <BotonTerminos clienteNombre={(p.clientes as any)?.nombre} telefono={(p.clientes as any)?.telefono} />
 
                           <button 
-  onClick={() => {
-    const link = `${window.location.origin}/cronograma/${p.id}`;
-    // Usamos el texto ya convertido a formato URL para evitar errores de codificación
-    const mensajeSeguro = `%C2%A1Hola!%20%F0%9F%93%84%20Aqu%C3%AD%20tienes%20tu%20acceso%20seguro%20para%20revisar%20el%20estado%20de%20tu%20financiamiento%20en%20tiempo%20real%3A%0A%0A%F0%9F%94%97%20${encodeURIComponent(link)}%0A%0AGuarda%20este%20enlace%20para%20consultar%20tus%20cuotas%20cuando%20lo%20necesites.`;
-    
-    const telefonoBruto = (p.clientes as any)?.telefono || "";
-    let numLimpio = telefonoBruto.replace(/\D/g, '');
-    if (numLimpio.length === 9) numLimpio = '51' + numLimpio; 
-    
-    if (numLimpio) {
-      window.open(`https://wa.me/${numLimpio}?text=${mensajeSeguro}`, '_blank');
-    } else {
-      window.open(`https://wa.me/?text=${mensajeSeguro}`, '_blank');
-    }
-  }} 
-  title="Enviar Link por WhatsApp" 
-  className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/20 hover:text-emerald-300 rounded-md transition-all"
->
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-  </svg>
-</button>
-
+                            onClick={() => enviarMensajeCronograma(p)} 
+                            title="Enviar Link por WhatsApp" 
+                            className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/10 hover:text-emerald-400 rounded-md transition-all"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                            </svg>
+                          </button>
                           <button onClick={() => setPrestamoToDelete(p.id)} title="Eliminar Contrato" className="p-1.5 text-zinc-400 bg-zinc-800/50 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-all">
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                           </button>

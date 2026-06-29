@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function SimuladorPage() {
   const [tipoPlazo, setTipoPlazo] = useState<"meses" | "dias">("meses");
@@ -8,12 +9,16 @@ export default function SimuladorPage() {
   const [tasa, setTasa] = useState<number>(10);
   const [plazo, setPlazo] = useState<number>(6);
   
-  // Fechas
+  // Fechas y Datos del Cliente
   const [fechaDesembolso, setFechaDesembolso] = useState<string>("");
   const [fechaLimite, setFechaLimite] = useState<string>("");
+  const [nombreCliente, setNombreCliente] = useState<string>("");
   const [telefonoCliente, setTelefonoCliente] = useState<string>("");
 
-  // Inicializar fechas por defecto (Hoy y Mañana)
+  // Estado para la plantilla de Supabase
+  const [plantillaSimulacion, setPlantillaSimulacion] = useState(`📄 Simulación de Crédito - Z-Index Studio\n\nHola {{nombre}}, tu financiamiento por S/ {{monto}} quedaría estructurado de la siguiente manera:\n\n{{lista_cuotas}}\n\n💰 Total a cancelar: S/ {{total}}\n\n¡Cualquier consulta estamos a tu disposición!`);
+
+  // 1. Inicializar fechas por defecto (Hoy y Mañana)
   useEffect(() => {
     const hoy = new Date();
     setFechaDesembolso(hoy.toISOString().split('T')[0]);
@@ -21,6 +26,18 @@ export default function SimuladorPage() {
     const manana = new Date(hoy);
     manana.setDate(manana.getDate() + 15); // Por defecto 15 días para la muestra
     setFechaLimite(manana.toISOString().split('T')[0]);
+  }, []);
+
+  // 2. Leer la plantilla de Supabase
+  useEffect(() => {
+    async function getPlantilla() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.msgSimulacion) {
+        setPlantillaSimulacion(user.user_metadata.msgSimulacion);
+      }
+    }
+    getPlantilla();
   }, []);
 
   // MOTOR MATEMÁTICO (Dual: Alemán vs Días)
@@ -93,30 +110,29 @@ export default function SimuladorPage() {
     { interes: 0, total: 0 }
   );
 
-  // GENERADOR DE REPORTE PARA WHATSAPP
+  // GENERADOR DE REPORTE INTELIGENTE PARA WHATSAPP
   const enviarWhatsApp = () => {
     let numLimpio = telefonoCliente.replace(/\D/g, '');
     if (numLimpio.length > 0 && numLimpio.length === 9) numLimpio = '51' + numLimpio;
     
-    let mensaje = `📄 *Simulación de Crédito - Z-Index Studio*\n\n`;
-    
-    if (tipoPlazo === "dias" && cronograma.length > 0) {
-        mensaje += `Hola, tu financiamiento relámpago por *S/ ${monto.toFixed(2)}* (a ${(cronograma[0] as any).detalleDias} días) quedaría estructurado de la siguiente manera:\n\n`;
-    } else {
-        mensaje += `Hola, tu financiamiento a plazos por *S/ ${monto.toFixed(2)}* quedaría estructurado de la siguiente manera:\n\n`;
-    }
-    
+    // 1. Armar el texto de las cuotas
+    let listaCuotasTexto = "";
     cronograma.forEach(c => {
         const fechaFmt = new Date(c.fecha + 'T12:00:00Z').toLocaleDateString('es-ES');
-        mensaje += `🗓️ *Cuota ${c.numero}* (${fechaFmt}): S/ ${c.total.toFixed(2)}\n`;
+        listaCuotasTexto += `🗓️ *Cuota ${c.numero}* (${fechaFmt}): S/ ${c.total.toFixed(2)}\n`;
     });
 
-    mensaje += `\n💰 *Total a cancelar:* S/ ${totales.total.toFixed(2)}\n\n`;
-    mensaje += `¡Cualquier consulta estamos a tu disposición!`;
+    // 2. Reemplazar las variables de la plantilla
+    const mensajeFinal = plantillaSimulacion
+      .replace(/{{nombre}}/g, nombreCliente || "Cliente")
+      .replace(/{{monto}}/g, monto.toFixed(2))
+      .replace(/{{lista_cuotas}}/g, listaCuotasTexto.trim())
+      .replace(/{{total}}/g, totales.total.toFixed(2));
 
+    // 3. Abrir WhatsApp
     const url = numLimpio 
-      ? `https://wa.me/${numLimpio}?text=${encodeURIComponent(mensaje)}`
-      : `https://wa.me/?text=${encodeURIComponent(mensaje)}`; 
+      ? `https://wa.me/${numLimpio}?text=${encodeURIComponent(mensajeFinal)}`
+      : `https://wa.me/?text=${encodeURIComponent(mensajeFinal)}`; 
       
     window.open(url, '_blank');
   };
@@ -223,6 +239,15 @@ export default function SimuladorPage() {
             
             <div className="space-y-4">
               <div>
+                <label className="block text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">Nombre (Opcional)</label>
+                <input 
+                  type="text" 
+                  placeholder="Ej: Jhaivert Soto" 
+                  value={nombreCliente}
+                  onChange={(e) => setNombreCliente(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white text-sm focus:border-[#25D366] focus:ring-1 focus:ring-[#25D366] outline-none transition-all mb-3"
+                />
+                
                 <label className="block text-[10px] font-bold text-zinc-600 uppercase tracking-wider mb-1.5">N° WhatsApp (Opcional)</label>
                 <input 
                   type="text" 

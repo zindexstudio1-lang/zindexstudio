@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+
 interface BotonTerminosProps {
   clienteNombre: string;
   telefono: string;
-  // Enlace por defecto donde subirás tu PDF (luego lo puedes cambiar)
   urlPdf?: string; 
 }
 
@@ -13,15 +15,39 @@ export default function BotonTerminos({
   urlPdf = "https://zindexstudio.vercel.app/Politicas.pdf" 
 }: BotonTerminosProps) {
   
+  // Plantilla por defecto en caso de que no haya guardado nada aún
+  const [plantilla, setPlantilla] = useState(`Hola {{nombre}},
+Te saludamos de Z-Index Studio.
+
+Para garantizar la total transparencia de nuestras operaciones, te compartimos nuestros Términos y Condiciones. Puedes leerlos o descargarlos en el siguiente enlace:
+
+📄 ${urlPdf}
+
+¡Cualquier duda estamos a tu disposición!`);
+
+  // El cerebro que lee tu perfil en tiempo real
+  useEffect(() => {
+    async function getPlantilla() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user?.user_metadata?.msgPoliticas) {
+        setPlantilla(user.user_metadata.msgPoliticas);
+      }
+    }
+    getPlantilla();
+  }, []);
+
   const enviarTerminos = () => {
     if (!telefono) {
       alert("⚠️ Este cliente no tiene un número de teléfono registrado.");
       return;
     }
 
-    const mensajeTexto = `Hola *${clienteNombre}*,\nTe saludamos de *Z-Index Studio*.\n\nPara garantizar la total transparencia de nuestras operaciones, te compartimos nuestros Términos y Condiciones. Puedes leerlos o descargarlos en el siguiente enlace:\n\n📄 ${urlPdf}\n\n¡Cualquier duda estamos a tu disposición!`;
+    // Reemplazamos la variable mágica con el nombre real
+    const mensajeTexto = plantilla.replace(/{{nombre}}/g, clienteNombre || "Cliente");
 
-    // Limpiamos el número y le ponemos el 51 de Perú si es necesario
+    // Limpiamos el número y le ponemos el 51 de Perú
     let numLimpio = telefono.replace(/\D/g, '');
     if (numLimpio.length === 9) numLimpio = '51' + numLimpio; 
 

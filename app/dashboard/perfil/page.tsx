@@ -23,6 +23,11 @@ export default function PerfilPage() {
   const [msgHoy, setMsgHoy] = useState("");
   const [msgMora, setMsgMora] = useState("");
 
+  // --- NUEVOS MENSAJES OPERATIVOS ---
+  const [msgSimulacion, setMsgSimulacion] = useState("");
+  const [msgPoliticas, setMsgPoliticas] = useState("");
+  const [msgCronograma, setMsgCronograma] = useState("");
+
   useEffect(() => {
     async function loadUserData() {
       const supabase = createClient();
@@ -37,6 +42,35 @@ export default function PerfilPage() {
         setMsgPreventivo(meta?.msgPreventivo || "Hola *{{nombre}}*,\nTe saludamos de *Z-Index Studio*.\n\nTe recordamos amablemente que tu cuota de *S/ {{monto}}* vence en {{dias}} días (el {{fecha}}).");
         setMsgHoy(meta?.msgHoy || "Hola *{{nombre}}*.\n\nTe informamos que tu cuota de *S/ {{monto}}* vence *HOY* ({{fecha}}). Tienes plazo hasta mañana para evitar mora.");
         setMsgMora(meta?.msgMora || "Hola *{{nombre}}*.\n\nTu cuota de *S/ {{monto}}* se encuentra *VENCIDA* por {{dias}} día(s).\n\nPor favor, regulariza tu pago.");
+
+        // --- CARGAR NUEVOS MENSAJES ---
+        // --- CARGAR NUEVOS MENSAJES OPERATIVOS ---
+        
+        setMsgSimulacion(meta?.msgSimulacion || `📄 Simulación de Crédito - Z-Index Studio
+
+Hola {{nombre}}, tu financiamiento a plazos por S/ {{monto}} quedaría estructurado de la siguiente manera:
+
+{{lista_cuotas}}
+
+💰 Total a cancelar: S/ {{total}}
+
+¡Cualquier consulta estamos a tu disposición!`);
+
+        setMsgPoliticas(meta?.msgPoliticas || `Hola {{nombre}},
+Te saludamos de Z-Index Studio.
+
+Para garantizar la total transparencia de nuestras operaciones, te compartimos nuestros Términos y Condiciones. Puedes leerlos o descargarlos en el siguiente enlace:
+
+📄 https://zindexstudio.vercel.app/Politicas.pdf
+
+¡Cualquier duda estamos a tu disposición!`);
+
+        setMsgCronograma(meta?.msgCronograma || `¡Hola! 📄 Aquí tienes tu acceso seguro para revisar el estado de tu financiamiento en tiempo real:
+
+🔗 {{link}}
+
+Guarda este enlace para consultar tus cuotas cuando lo necesites.`);
+
       }
       setIsLoadingDatos(false);
     }
@@ -58,7 +92,8 @@ export default function PerfilPage() {
     setIsSaving(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ 
-      data: { diasAlerta, msgPreventivo, msgHoy, msgMora } 
+
+      data: { diasAlerta, msgPreventivo, msgHoy, msgMora, msgSimulacion, msgPoliticas, msgCronograma } 
     });
     if (error) alert("Error al guardar configuración: " + error.message);
     else alert("¡Motor de alertas y plantillas actualizados!");
@@ -236,6 +271,25 @@ export default function PerfilPage() {
                     <label className="block text-xs font-bold text-red-400 mb-3 uppercase">3. Mensaje de Mora (Días atrasados)</label>
                     <textarea rows={3} value={msgMora} onChange={(e) => setMsgMora(e.target.value)} className="w-full px-4 py-4 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-300 outline-none focus:border-[#25D366] resize-none shadow-inner" />
                   </div>
+
+                  <div className="pt-6 border-t border-zinc-800/80">
+                    <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider mb-4">Mensajes Operativos (Inicio de Crédito)</h3>
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase">A. Envío de Simulación</label>
+                        <textarea rows={2} value={msgSimulacion} onChange={(e) => setMsgSimulacion(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-300 outline-none focus:border-indigo-500 resize-none shadow-inner" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase">B. Envío de Políticas</label>
+                        <textarea rows={2} value={msgPoliticas} onChange={(e) => setMsgPoliticas(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-300 outline-none focus:border-indigo-500 resize-none shadow-inner" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase">C. Envío del Cronograma (Link)</label>
+                        <textarea rows={2} value={msgCronograma} onChange={(e) => setMsgCronograma(e.target.value)} className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-sm text-zinc-300 outline-none focus:border-indigo-500 resize-none shadow-inner" />
+                      </div>
+                    </div>
+                  </div>
+                  
                 </div>
                 <div className="p-6 border-t border-zinc-800/80 bg-zinc-950/20 flex justify-end">
                   <button type="submit" disabled={isSaving} className="w-full md:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50">
