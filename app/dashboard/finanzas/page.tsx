@@ -206,7 +206,6 @@ const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias
   const confirmarEliminacion = async () => {
     if (!prestamoToDelete) return;
     setIsLoadingTable(true);
-    setPrestamoToDelete(null); 
     
     const result = await deletePrestamo(prestamoToDelete);
     if (result?.error) {
@@ -214,6 +213,7 @@ const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias
     } else {
       await refreshData();
     }
+    setPrestamoToDelete(null); // Esto cierra el modal
     setIsLoadingTable(false);
   };
 
@@ -352,6 +352,21 @@ const prestamosVariosMeses = prestamosActivos.filter(p => p.tipo_plazo !== 'dias
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
+      {prestamoToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setPrestamoToDelete(null)}></div>
+          <div className="relative z-10 w-full max-w-sm bg-zinc-900 border border-red-900/30 rounded-2xl p-6 shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-xl font-bold text-white mb-2">¿Eliminar Préstamo?</h2>
+            <p className="text-sm text-zinc-400 mb-6">Esta acción borrará el préstamo y sus cuotas. Es irreversible.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setPrestamoToDelete(null)} className="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 rounded-lg">Cancelar</button>
+              <button onClick={confirmarEliminacion} className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-500 rounded-lg">Sí, Eliminar</button>
             </div>
           </div>
         </div>
