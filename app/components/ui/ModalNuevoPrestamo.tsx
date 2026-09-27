@@ -3,12 +3,24 @@
 import { useState, useRef } from "react";
 import { registrarPrestamo } from "@/app/actions/prestamos";
 
+// Definimos la estructura de los datos que recibe el componente
+interface ISocio {
+  id: string;
+  email: string;
+  role?: string;
+}
+
+interface ICurrentUser {
+  id: string;
+  [key: string]: unknown;
+}
+
 interface ModalNuevoPrestamoProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  currentUser: any;
-  socios: any[];
+  currentUser: ICurrentUser | null;
+  socios: ISocio[];
 }
 
 export default function ModalNuevoPrestamo({
@@ -40,8 +52,8 @@ export default function ModalNuevoPrestamo({
       setTipoFondeo("propio");
       setTipoPlazoFormulario("meses");
       setIsLoading(false);
-      onSuccess(); // Esto le avisa al padre que recargue la tabla
-      onClose();   // Esto cierra el modal
+      onSuccess(); 
+      onClose();   
     }
   };
 
@@ -116,7 +128,6 @@ export default function ModalNuevoPrestamo({
                 </div>
               </div>
 
-              {/* SELECTOR MÁGICO: DÍAS O MESES */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tipo de Plazo</label>

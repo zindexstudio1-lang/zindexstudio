@@ -1,27 +1,49 @@
 "use client";
 
-import { useEffect, useState, use } from "react"; // 1. Agregamos 'use'
+import { useEffect, useState, use } from "react"; 
 import { getPrestamoPublico } from "@/app/actions/prestamos";
 
-export default function PortalClientePage({ params }: { params: Promise<{ id: string }> }) { // 2. params ahora es una Promesa
-  const { id } = use(params); // 3. Desenvolvemos los params aquí
+// Creamos los moldes exactos para los datos del portal
+interface ICuotaPublica {
+  id: string;
+  estado: string;
+  monto_total: number;
+  fecha_vencimiento: string;
+  numero_cuota: number;
+  fecha_pago_real?: string | null;
+}
+
+interface IPrestamoPublico {
+  clientes?: { nombre?: string };
+}
+
+interface IPortalData {
+  prestamo: IPrestamoPublico;
+  cuotas: ICuotaPublica[];
+  error?: string;
+}
+
+export default function PortalClientePage({ params }: { params: Promise<{ id: string }> }) { 
+  const { id } = use(params); 
   
-  const [data, setData] = useState<any>(null);
+  // Asignamos la interface al state
+  const [data, setData] = useState<IPortalData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadData() {
-      const result = await getPrestamoPublico(id); // 4. Usamos la variable id directa
+      const result = await getPrestamoPublico(id); 
       if (result.error) {
         setError(result.error);
       } else {
-        setData(result);
+        // Casteamos el resultado a nuestra interface para que TS lo acepte
+        setData(result as unknown as IPortalData);
       }
       setIsLoading(false);
     }
     loadData();
-  }, [id]); // 5. Dependencia actualizada
+  }, [id]); 
 
   if (isLoading) {
     return (
@@ -46,13 +68,13 @@ export default function PortalClientePage({ params }: { params: Promise<{ id: st
   const { prestamo, cuotas } = data;
   const clienteNombre = prestamo.clientes?.nombre || "Cliente";
   
-  // Matemáticas para el resumen
-  const cuotasPagadas = cuotas.filter((c: any) => c.estado === 'pagado').length;
+  // Ahora TS ya sabe qué es "c" automáticamente
+  const cuotasPagadas = cuotas.filter(c => c.estado === 'pagado').length;
   const totalCuotas = cuotas.length;
   const progreso = Math.round((cuotasPagadas / totalCuotas) * 100);
   
-  const totalDeuda = cuotas.reduce((acc: number, c: any) => acc + c.monto_total, 0);
-  const totalPagado = cuotas.filter((c: any) => c.estado === 'pagado').reduce((acc: number, c: any) => acc + c.monto_total, 0);
+  const totalDeuda = cuotas.reduce((acc, c) => acc + c.monto_total, 0);
+  const totalPagado = cuotas.filter(c => c.estado === 'pagado').reduce((acc, c) => acc + c.monto_total, 0);
   const saldoPendiente = totalDeuda - totalPagado;
 
   return (
@@ -108,7 +130,7 @@ export default function PortalClientePage({ params }: { params: Promise<{ id: st
         <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4 px-1">Cronograma Detallado</h2>
         
         <div className="space-y-3">
-          {cuotas.map((cuota: any) => {
+          {cuotas.map((cuota) => {
             const isPagado = cuota.estado === 'pagado';
             const vencimiento = new Date(cuota.fecha_vencimiento + 'T12:00:00Z');
             const fechaFmt = vencimiento.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });

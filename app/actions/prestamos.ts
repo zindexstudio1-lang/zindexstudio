@@ -102,12 +102,12 @@ export async function registrarPrestamo(formData: FormData) {
       const amortizacionFijaBase = parseFloat((montoCapital / plazoNum).toFixed(2));
       
       for (let i = 1; i <= plazoNum; i++) {
-        let fechaPagoCuota = new Date(fechaBase);
-        fechaPagoCuota.setUTCMonth(fechaBase.getUTCMonth() + i);
-        fechaPagoCuota.setUTCDate(fechaPagoCuota.getUTCDate() + 1);
+        const fechaPagoCuotaIteracion = new Date(fechaBase);
+        fechaPagoCuotaIteracion.setUTCMonth(fechaBase.getUTCMonth() + i);
+        fechaPagoCuotaIteracion.setUTCDate(fechaPagoCuotaIteracion.getUTCDate() + 1);
 
         const interesMensual = parseFloat((saldoRestante * (tasaInteres / 100)).toFixed(2));
-        let amortizacionCuota = i === plazoNum ? parseFloat(saldoRestante.toFixed(2)) : amortizacionFijaBase;
+        const amortizacionCuota = i === plazoNum ? parseFloat(saldoRestante.toFixed(2)) : amortizacionFijaBase;
         const cuotaTotal = parseFloat((amortizacionCuota + interesMensual).toFixed(2));
 
         cuotasParaInsertar.push({
@@ -116,7 +116,7 @@ export async function registrarPrestamo(formData: FormData) {
           amortizacion_capital: amortizacionCuota,
           interes: interesMensual,
           monto_total: cuotaTotal,
-          fecha_vencimiento: fechaPagoCuota.toISOString().split('T')[0],
+          fecha_vencimiento: fechaPagoCuotaIteracion.toISOString().split('T')[0],
           estado: 'pendiente'
         });
         saldoRestante = parseFloat((saldoRestante - amortizacionCuota).toFixed(2));
@@ -128,8 +128,9 @@ export async function registrarPrestamo(formData: FormData) {
 
     return { success: true };
       
-  } catch (error: any) {
-    return { error: error.message || "Error crítico en el servidor." };
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : "Error crítico en el servidor.";
+    return { error: errorMsg };
   }
 }
 
@@ -151,8 +152,9 @@ export async function deletePrestamo(prestamoId: string) {
     if (error) throw new Error(error.message);
     revalidatePath("/dashboard/finanzas");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "Error al eliminar el préstamo." };
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : "Error al eliminar el préstamo.";
+    return { error: errorMsg };
   }
 }
 
@@ -210,25 +212,21 @@ export async function procesarPagoCuota(formData: FormData) {
       }).eq("id", cuotaId);
     }
 
-    // ... (todo tu código anterior de procesarPagoCuota)
-    
-    // --- INICIO CÓDIGO NUEVO: AUTO-CANCELAR CONTRATO ---
     const { count } = await supabaseAdmin
       .from("cuotas")
       .select("*", { count: 'exact', head: true })
       .eq("prestamo_id", prestamoId)
       .eq("estado", "pendiente");
 
-    // Si ya no quedan cuotas pendientes, marcamos el préstamo matriz como pagado
     if (count === 0) {
       await supabaseAdmin.from("prestamos").update({ estado: 'pagado' }).eq("id", prestamoId);
     }
-    // --- FIN CÓDIGO NUEVO ---
 
     revalidatePath("/dashboard/finanzas");
     return { success: true };
-  } catch (error: any) {  
-    return { error: error.message || "Error interno al procesar la transacción." };
+  } catch (error: unknown) {  
+    const errorMsg = error instanceof Error ? error.message : "Error interno al procesar la transacción.";
+    return { error: errorMsg };
   }
 }
 
@@ -250,8 +248,9 @@ export async function editarPagoCuota(formData: FormData) {
     revalidatePath("/dashboard/finanzas");
     revalidatePath("/dashboard/inversionistas");
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : "Error al editar pago.";
+    return { error: errorMsg };
   }
 }
 
@@ -271,29 +270,24 @@ export async function getPrestamosComoInversionista(inversionistaId: string) {
 export async function anularPagoCuota(cuotaId: string) {
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   try {
-    // 1. Buscamos a qué préstamo pertenece esta cuota ANTES de modificarla
     const { data: cuota } = await supabaseAdmin.from("cuotas").select("prestamo_id").eq("id", cuotaId).single();
 
-    // 2. Anulamos el pago
     const { error } = await supabaseAdmin.from("cuotas").update({
       estado: 'pendiente', fecha_pago_real: null, mora_aplicada: 0, tipo_pago: null, metodo_pago: null
     }).eq("id", cuotaId);
     if (error) throw new Error(error.message);
 
-    // 3. Reactivamos el préstamo maestro (por si estaba marcado como Cancelado)
     if (cuota) {
       await supabaseAdmin.from("prestamos").update({ estado: 'activo' }).eq("id", cuota.prestamo_id);
     }
 
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message || "Error al intentar deshacer el pago." };
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : "Error al intentar deshacer el pago.";
+    return { error: errorMsg };
   }
 }
 
-// ====================================================================
-// MOTOR DE ESTADÍSTICAS GLOBALES PARA EL DASHBOARD (V4 - CON FILTROS)
-// ====================================================================
 export async function getEstadisticasDashboard(userId: string, filtroOrigen: string = 'todos') {
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   
@@ -321,10 +315,10 @@ export async function getEstadisticasDashboard(userId: string, filtroOrigen: str
   let capitalRecuperado = 0;
   let gananciaReal = 0;
   let gananciaProyectadaTotal = 0;
-  let metodosPago: Record<string, number> = { efectivo: 0, yape: 0, plin: 0, transferencia: 0 };
+  const metodosPago: Record<string, number> = { efectivo: 0, yape: 0, plin: 0, transferencia: 0 };
 
   const desgloseMap = new Map();
-  const alertasCobro: any[] = []; 
+  const alertasCobro: Array<Record<string, unknown>> = []; 
 
   prestamos.forEach(p => {
      capitalColocado += p.monto_capital;
@@ -340,11 +334,14 @@ export async function getEstadisticasDashboard(userId: string, filtroOrigen: str
      }
 
      gananciaProyectadaTotal += miGananciaProyectada;
+     
+     // Definimos un tipo seguro en línea para los clientes
+     const clienteData = p.clientes as { nombre?: string, telefono?: string } | null;
 
      desgloseMap.set(p.id, {
          id: p.id,
-         cliente: (p.clientes as any)?.nombre || 'Cliente Desconocido',
-         telefono: (p.clientes as any)?.telefono || '',
+         cliente: clienteData?.nombre || 'Cliente Desconocido',
+         telefono: clienteData?.telefono || '',
          capital: p.monto_capital,
          gananciaProyectada: miGananciaProyectada,
          gananciaReal: 0,
@@ -406,18 +403,14 @@ export async function getEstadisticasDashboard(userId: string, filtroOrigen: str
      metodosPago,
      totalPrestamos: prestamos.length,
      desgloseClientes: Array.from(desgloseMap.values()).sort((a, b) => b.gananciaProyectada - a.gananciaProyectada),
-     alertas: alertasCobro.sort((a, b) => a.diasRestantes - b.diasRestantes)
+     alertas: alertasCobro.sort((a, b) => (a.diasRestantes as number) - (b.diasRestantes as number))
   };
 }
 
-// ====================================================================
-// PORTAL PÚBLICO DEL CLIENTE (SIN LOGIN)
-// ====================================================================
 export async function getPrestamoPublico(prestamoId: string) {
   const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   
   try {
-    // 1. Buscamos el préstamo y el nombre del cliente
     const { data: prestamo, error: errorPrestamo } = await supabaseAdmin
       .from("prestamos")
       .select("id, monto_capital, tasa_interes, tipo_plazo, plazo_meses, fecha_desembolso, estado, clientes(nombre)")
@@ -426,7 +419,6 @@ export async function getPrestamoPublico(prestamoId: string) {
       
     if (errorPrestamo || !prestamo) return { error: "No se encontró el contrato." };
     
-    // 2. Buscamos sus cuotas
     const { data: cuotas, error: errorCuotas } = await supabaseAdmin
       .from("cuotas")
       .select("*")
@@ -436,7 +428,7 @@ export async function getPrestamoPublico(prestamoId: string) {
     if (errorCuotas) return { error: "Error al cargar las cuotas." };
     
     return { prestamo, cuotas };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { error: "Error de servidor al cargar el portal." };
   }
 }
@@ -452,7 +444,8 @@ export async function getDatosExportacion(adminId: string) {
       
     if (error) return { error: error.message };
     return { data: data || [] };
-  } catch (error: any) {
-    return { error: "Error interno al exportar datos." };
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : "Error interno al exportar datos.";
+    return { error: errorMsg };
   }
 }

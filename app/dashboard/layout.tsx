@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // <-- EL RADAR DE RUTAS
+import { usePathname } from "next/navigation"; 
 import { createClient } from "@/utils/supabase/client";
 
 // Íconos SVG
@@ -20,7 +20,7 @@ export default function DashboardLayout({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userData, setUserData] = useState({ email: "Cargando...", role: "..." });
-  const pathname = usePathname(); // Activamos el radar
+  const pathname = usePathname();
 
   useEffect(() => {
     async function loadUser() {
@@ -43,21 +43,20 @@ export default function DashboardLayout({
     loadUser();
   }, []);
 
-  // Función que decide si pinta el botón de azul o lo deja en gris
   const getLinkClasses = (path: string) => {
     const isActive = pathname === path;
     return isActive
-      ? "flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold transition-all shadow-sm"
+      ? "flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#c39c4a]/10 text-[#c39c4a] border border-[#c39c4a]/20 font-bold transition-all shadow-sm"
       : "flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-transparent font-medium transition-colors";
   };
 
   return (
-    <div className="flex h-screen bg-zinc-950 overflow-hidden">
+    <div className="flex h-screen bg-[#0d1b32] overflow-hidden">
       
       {/* Barra superior móvil */}
-      <div className="md:hidden absolute top-0 left-0 w-full h-16 bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-800 z-30 flex items-center justify-between px-4">
+      <div className="md:hidden absolute top-0 left-0 w-full h-16 bg-[#0d1b32]/90 backdrop-blur-xl border-b border-zinc-800 z-30 flex items-center justify-between px-4">
         <h2 className="text-xl font-bold text-white tracking-tight">
-          Z-Index <span className="text-indigo-400">Studio</span>
+          Laboriano <span className="text-[#c39c4a]">Capital</span>
         </h2>
         <button onClick={() => setIsSidebarOpen(true)} className="text-zinc-400 hover:text-white p-2">
           <MenuIcon />
@@ -70,14 +69,14 @@ export default function DashboardLayout({
 
       {/* Menú Lateral */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-zinc-950 md:bg-zinc-900/40 border-r border-zinc-800/80 backdrop-blur-xl flex flex-col
+        fixed inset-y-0 left-0 z-50 w-64 bg-[#0d1b32] md:bg-[#0d1b32]/90 border-r border-zinc-800/80 backdrop-blur-xl flex flex-col
         transition-transform duration-300 ease-in-out md:relative md:translate-x-0
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
         
         <div className="h-16 flex items-center justify-between px-6 border-b border-zinc-800/80">
           <h2 className="text-xl font-bold text-white tracking-tight">
-            Z-Index <span className="text-indigo-400">Studio</span>
+            Laboriano <span className="text-[#c39c4a]">Capital</span>
           </h2>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-zinc-400 hover:text-white p-1">
             <CloseIcon />
@@ -109,18 +108,19 @@ export default function DashboardLayout({
           </Link>
 
           <Link 
-  href="/dashboard/simulador" 
-  className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-    pathname === '/dashboard/simulador' 
-      ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
-      : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-transparent'
-  }`}
->
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
-  </svg>
-  Simulador Créditos
-</Link>
+            href="/dashboard/simulador" 
+            onClick={() => setIsSidebarOpen(false)}
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all ${
+              pathname === '/dashboard/simulador' 
+                ? 'bg-[#c39c4a]/10 text-[#c39c4a] border border-[#c39c4a]/20 font-bold' 
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50 border border-transparent'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
+            </svg>
+            Simulador Créditos
+          </Link>
 
           <div className="pt-4 pb-2">
             <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider px-3">Sistemas</p>
@@ -133,27 +133,24 @@ export default function DashboardLayout({
 
         {/* PERFIL DE USUARIO Y BOTÓN DE SALIDA */}
         <div className="p-4 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/20 mt-auto">
-          
-          {/* AHORA ES UN LINK HACIA EL PERFIL */}
           <Link 
             href="/dashboard/perfil"
             className="flex items-center gap-3 overflow-hidden flex-1 group hover:bg-zinc-800/60 p-1.5 -ml-1.5 rounded-xl transition-all cursor-pointer"
             title="Ir a Configuración de Perfil"
           >
-            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow-lg uppercase group-hover:shadow-indigo-500/25 transition-all">
+            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-tr from-[#0d1b32] to-[#c39c4a] flex items-center justify-center text-sm font-bold text-white shadow-lg uppercase group-hover:shadow-[#c39c4a]/25 transition-all">
               {userData.email.charAt(0)}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium text-white truncate w-full group-hover:text-indigo-400 transition-colors" title={userData.email}>
+              <span className="text-sm font-medium text-white truncate w-full group-hover:text-[#c39c4a] transition-colors" title={userData.email}>
                 {userData.email.split('@')[0]}
               </span>
-              <span className={`text-xs mt-0.5 font-medium ${userData.role === 'super_admin' ? 'text-indigo-400' : 'text-zinc-500'}`}>
+              <span className={`text-xs mt-0.5 font-medium ${userData.role === 'super_admin' ? 'text-[#c39c4a]' : 'text-zinc-500'}`}>
                 {userData.role.replace('_', ' ')}
               </span>
             </div>
           </Link>
 
-          {/* BOTÓN DE SALIR (INTACTO) */}
           <button 
             onClick={async () => {
               const supabase = createClient();
@@ -171,7 +168,8 @@ export default function DashboardLayout({
 
       </aside>
 
-      <main className="flex-1 flex flex-col h-full relative overflow-y-auto no-scrollbar w-full">
+      {/* AQUÍ SE APLICÓ EL COLOR CLARO AL FONDO GENERAL */}
+      <main className="flex-1 flex flex-col h-full relative overflow-y-auto no-scrollbar w-full bg-[#F8FAFC]">
         <div className="md:pt-0 pt-16 h-full">
           {children}
         </div>

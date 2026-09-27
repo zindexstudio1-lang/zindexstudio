@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+:root {
+  --color-blue: #0B172A;
+  --color-gold: #C5A059;
+  --color-light: #F8FAFC;
+}
+
+body {
+  background-color: var(--color-light);
+  color: #334155;
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -10,14 +21,42 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
 @layer utilities {
-  /* Ocultar scrollbar en Chrome, Safari y Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-  /* Ocultar scrollbar en Firefox, IE y Edge */
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+/* 🎨 CLASES CENTRALIZADAS MAESTRAS */
+@layer components {
+  /* Botones principales de Laboriano */
+  .btn-laboriano {
+    background-color: #0B172A;
+    color: #C5A059;
+    font-weight: 700;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-laboriano:hover {
+    background-color: #152A4A;
+  }
+
+  /* Tarjetas y contenedores limpios */
+  .card-laboriano {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Títulos principales */
+  .title-laboriano {
+    color: #0B172A;
+    font-weight: 800;
   }
 }
