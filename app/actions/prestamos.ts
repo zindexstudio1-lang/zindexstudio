@@ -10,15 +10,15 @@ export async function registrarPrestamo(formData: FormData) {
     const documento = formData.get("documento") as string;
     const telefono = formData.get("telefono") as string;
     
-    const montoCapital = parseFloat(formData.get("monto_capital") as string);
-    const tasaInteres = parseFloat(formData.get("tasa_interes") as string);
+    const montoCapital = Number.parseFloat(formData.get("monto_capital") as string);
+    const tasaInteres = Number.parseFloat(formData.get("tasa_interes") as string);
     
     const tipoPlazo = formData.get("tipo_plazo") as string || "meses"; 
     const fechaDesembolsoStr = formData.get("fecha_desembolso") as string;
     
     const tipoFondeo = formData.get("tipo_fondeo") as string;
     const inversionistaId = formData.get("inversionista_id") as string || null;
-    const tasaInversionista = parseFloat(formData.get("tasa_inversionista") as string);
+    const tasaInversionista = Number.parseFloat(formData.get("tasa_inversionista") as string);
 
     if (!adminId || !nombreCliente || !documento || !fechaDesembolsoStr) {
       return { error: "Todos los campos de identidad y fechas son completamente obligatorios." };
@@ -85,8 +85,8 @@ export async function registrarPrestamo(formData: FormData) {
     let saldoRestante = montoCapital;
 
     if (tipoPlazo === "dias") {
-      const interesTotal = parseFloat((montoCapital * (tasaInteres / 100) * (diasExactos / 30)).toFixed(2));
-      const cuotaTotal = parseFloat((montoCapital + interesTotal).toFixed(2));
+      const interesTotal = Number.parseFloat((montoCapital * (tasaInteres / 100) * (diasExactos / 30)).toFixed(2));
+      const cuotaTotal = Number.parseFloat((montoCapital + interesTotal).toFixed(2));
 
       cuotasParaInsertar.push({
         prestamo_id: prestamoData.id,
@@ -99,16 +99,16 @@ export async function registrarPrestamo(formData: FormData) {
       });
     } else {
       const fechaBase = new Date(fechaDesembolsoStr + 'T00:00:00Z');
-      const amortizacionFijaBase = parseFloat((montoCapital / plazoNum).toFixed(2));
+      const amortizacionFijaBase = Number.parseFloat((montoCapital / plazoNum).toFixed(2));
       
       for (let i = 1; i <= plazoNum; i++) {
         const fechaPagoCuotaIteracion = new Date(fechaBase);
         fechaPagoCuotaIteracion.setUTCMonth(fechaBase.getUTCMonth() + i);
         fechaPagoCuotaIteracion.setUTCDate(fechaPagoCuotaIteracion.getUTCDate() + 1);
 
-        const interesMensual = parseFloat((saldoRestante * (tasaInteres / 100)).toFixed(2));
-        const amortizacionCuota = i === plazoNum ? parseFloat(saldoRestante.toFixed(2)) : amortizacionFijaBase;
-        const cuotaTotal = parseFloat((amortizacionCuota + interesMensual).toFixed(2));
+        const interesMensual = Number.parseFloat((saldoRestante * (tasaInteres / 100)).toFixed(2));
+        const amortizacionCuota = i === plazoNum ? Number.parseFloat(saldoRestante.toFixed(2)) : amortizacionFijaBase;
+        const cuotaTotal = Number.parseFloat((amortizacionCuota + interesMensual).toFixed(2));
 
         cuotasParaInsertar.push({
           prestamo_id: prestamoData.id,
@@ -119,7 +119,7 @@ export async function registrarPrestamo(formData: FormData) {
           fecha_vencimiento: fechaPagoCuotaIteracion.toISOString().split('T')[0],
           estado: 'pendiente'
         });
-        saldoRestante = parseFloat((saldoRestante - amortizacionCuota).toFixed(2));
+        saldoRestante = Number.parseFloat((saldoRestante - amortizacionCuota).toFixed(2));
       }
     }
 
@@ -170,7 +170,7 @@ export async function procesarPagoCuota(formData: FormData) {
   const prestamoId = formData.get("prestamo_id") as string;
   const tipoPago = formData.get("tipo_pago") as string;
   const metodoPago = formData.get("metodo_pago") as string || "efectivo"; 
-  const moraAplicada = parseFloat(formData.get("mora_aplicada") as string) || 0;
+  const moraAplicada = Number.parseFloat(formData.get("mora_aplicada") as string) || 0;
   const fechaPagoReal = formData.get("fecha_pago_real") as string;
 
   if (!cuotaId || !tipoPago || !fechaPagoReal) return { error: "Faltan datos obligatorios para procesar el pago." };
@@ -183,7 +183,7 @@ export async function procesarPagoCuota(formData: FormData) {
     if (tipoPago === 'completo' || tipoPago === 'mora') {
       const nuevoMontoTotal = cuotaActual.monto_total + moraAplicada;
       const { error: updateError } = await supabaseAdmin.from("cuotas").update({
-        estado: 'pagado', fecha_pago_real: fechaPagoReal, mora_aplicada: moraAplicada, tipo_pago: tipoPago, metodo_pago: metodoPago, monto_total: parseFloat(nuevoMontoTotal.toFixed(2))
+        estado: 'pagado', fecha_pago_real: fechaPagoReal, mora_aplicada: moraAplicada, tipo_pago: tipoPago, metodo_pago: metodoPago, monto_total: Number.parseFloat(nuevoMontoTotal.toFixed(2))
       }).eq("id", cuotaId);
       if (updateError) throw new Error("Error al registrar el pago: " + updateError.message);
     } 
@@ -208,7 +208,7 @@ export async function procesarPagoCuota(formData: FormData) {
 
       const nuevoMontoTotal = cuotaActual.interes + moraAplicada;
       await supabaseAdmin.from("cuotas").update({
-        estado: 'pagado', fecha_pago_real: fechaPagoReal, mora_aplicada: moraAplicada, tipo_pago: 'solo_interes', metodo_pago: metodoPago, amortizacion_capital: 0, monto_total: parseFloat(nuevoMontoTotal.toFixed(2))
+        estado: 'pagado', fecha_pago_real: fechaPagoReal, mora_aplicada: moraAplicada, tipo_pago: 'solo_interes', metodo_pago: metodoPago, amortizacion_capital: 0, monto_total: Number.parseFloat(nuevoMontoTotal.toFixed(2))
       }).eq("id", cuotaId);
     }
 

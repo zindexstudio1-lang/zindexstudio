@@ -60,8 +60,8 @@ export default function SimuladorPage() {
 
       if (diasExactos <= 0) return []; 
 
-      const interesTotal = parseFloat((monto * (tasa / 100) * (diasExactos / 30)).toFixed(2));
-      const cuotaTotal = parseFloat((monto + interesTotal).toFixed(2));
+      const interesTotal = Number.parseFloat((monto * (tasa / 100) * (diasExactos / 30)).toFixed(2));
+      const cuotaTotal = Number.parseFloat((monto + interesTotal).toFixed(2));
 
       return [{
         numero: 1,
@@ -80,7 +80,7 @@ export default function SimuladorPage() {
       // 3. Declaración e inicialización en la misma línea
       let saldoRestante = monto; 
       
-      const amortizacionFijaBase = parseFloat((monto / plazo).toFixed(2));
+      const amortizacionFijaBase = Number.parseFloat((monto / plazo).toFixed(2));
       const fechaBase = new Date(fechaDesembolso + 'T00:00:00Z');
 
       for (let i = 1; i <= plazo; i++) {
@@ -88,20 +88,20 @@ export default function SimuladorPage() {
         fechaPago.setUTCMonth(fechaBase.getUTCMonth() + i);
         fechaPago.setUTCDate(fechaPago.getUTCDate() + 1); 
 
-        const interesMensual = parseFloat((saldoRestante * (tasa / 100)).toFixed(2));
-        const amortizacionCuota = i === plazo ? parseFloat(saldoRestante.toFixed(2)) : amortizacionFijaBase;
-        const cuotaTotal = parseFloat((amortizacionCuota + interesMensual).toFixed(2));
+        const interesMensual = Number.parseFloat((saldoRestante * (tasa / 100)).toFixed(2));
+        const amortizacionCuota = i === plazo ? Number.parseFloat(saldoRestante.toFixed(2)) : amortizacionFijaBase;
+        const cuotaTotal = Number.parseFloat((amortizacionCuota + interesMensual).toFixed(2));
 
         cuotas.push({
           numero: i,
           amortizacion: amortizacionCuota,
           interes: interesMensual,
           total: cuotaTotal,
-          saldoMuerte: parseFloat((saldoRestante - amortizacionCuota).toFixed(2)),
+          saldoMuerte: Number.parseFloat((saldoRestante - amortizacionCuota).toFixed(2)),
           fecha: fechaPago.toISOString().split('T')[0]
         });
 
-        saldoRestante = parseFloat((saldoRestante - amortizacionCuota).toFixed(2));
+        saldoRestante = Number.parseFloat((saldoRestante - amortizacionCuota).toFixed(2));
       }
       return cuotas;
     }

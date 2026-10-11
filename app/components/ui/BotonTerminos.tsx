@@ -35,7 +35,7 @@ Para garantizar la total transparencia de nuestras operaciones, te compartimos n
         setPlantilla(user.user_metadata.msgPoliticas);
       }
     }
-    getPlantilla();
+    getPlantilla(); 
   }, []);
 
   const enviarTerminos = () => {
