@@ -84,7 +84,7 @@ export default function PortalClientePage({ params }: { params: Promise<{ id: st
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-600/20">Z</div>
-            <span className="font-bold text-white tracking-tight">Z-Index <span className="text-indigo-400 font-normal">Studio</span></span>
+            <span className="font-bold text-white tracking-tight">Laboriano Capital <span className="text-indigo-400 font-normal">Studio</span></span>
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded border border-emerald-400/20">
             Portal Seguro
