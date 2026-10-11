@@ -445,7 +445,7 @@ export default function DashboardOverview() {
       {/* MODAL INTERNO DE AUDITORÍA */}
       {selectedHistorial && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedHistorial(null)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedHistorial(null)}></button>
           
           <div className="relative z-10 w-full max-w-4xl bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-5 md:p-6 border-b border-slate-100 bg-slate-50">

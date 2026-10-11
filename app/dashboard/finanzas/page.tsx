@@ -347,7 +347,7 @@ export default function FinanzasPage() {
       
       {isCuotasModalOpen && selectedPrestamo && !isPagoModalOpen && !isEditPagoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCuotasModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCuotasModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-4xl bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-shrink-0">
               <div>
@@ -444,7 +444,7 @@ export default function FinanzasPage() {
 
       {isPagoModalOpen && selectedCuota && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsPagoModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsPagoModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
@@ -483,14 +483,14 @@ export default function FinanzasPage() {
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   {(tipoPagoForm === 'mora' || tipoPagoForm === 'solo_interes') && (
                     <div className="animate-in fade-in zoom-in duration-200">
-                      <label className="block text-xs font-bold text-amber-600 mb-1.5">Penalidad (S/)</label>
-                      <input type="number" name="mora_aplicada" step="0.01" required placeholder="Ej. 20.00" className="w-full px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500" />
+                      <label className="block text-xs font-bold text-amber-600 mb-1.5">Penalidad (S/)
+                      <input type="number" name="mora_aplicada" step="0.01" required placeholder="Ej. 20.00" className="w-full px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500" /></label>
                     </div>
                   )}
 
                   <div className={tipoPagoForm === 'completo' ? 'col-span-2' : 'col-span-1'}>
-                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha de Ingreso a Caja</label>
-                    <input type="date" name="fecha_pago_real" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" />
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha de Ingreso a Caja
+                    <input type="date" name="fecha_pago_real" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" /></label>
                   </div>
                 </div>
               </div>
@@ -505,7 +505,7 @@ export default function FinanzasPage() {
 
       {isEditPagoModalOpen && cuotaToEdit && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsEditPagoModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsEditPagoModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -536,8 +536,8 @@ export default function FinanzasPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Real de Ingreso</label>
-                  <input type="date" name="fecha_pago_real" required defaultValue={(cuotaToEdit.fecha_pago_real as string) || ''} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" />
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Real de Ingreso
+                  <input type="date" name="fecha_pago_real" required defaultValue={(cuotaToEdit.fecha_pago_real as string) || ''} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" /></label>
                 </div>
               </div>
               <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
@@ -552,7 +552,7 @@ export default function FinanzasPage() {
       {/* NUEVO DISEÑO PARA DESHACER */}
       {cuotaToUndo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setCuotaToUndo(null)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setCuotaToUndo(null)}></button>
           <div className="relative z-10 w-full max-w-sm bg-white border border-amber-200 rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="p-6 text-center space-y-4">
               <div className="w-12 h-12 bg-amber-50 text-amber-600 border border-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 shadow-inner">

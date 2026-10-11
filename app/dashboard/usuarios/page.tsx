@@ -271,7 +271,7 @@ export default function UsuariosPage() {
       {/* MODAL 1: CREAR EMPLEADO */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setIsCreateModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setIsCreateModalOpen(false)}></button>
           
           <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-slate-100 bg-slate-50">
@@ -290,12 +290,12 @@ export default function UsuariosPage() {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Correo del empleado</label>
-                  <input type="email" name="email" required placeholder="ejemplo@empresa.com" className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] shadow-inner transition-all" />
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Correo del empleado
+                  <input type="email" name="email" required placeholder="ejemplo@empresa.com" className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] shadow-inner transition-all" /></label>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Contraseña temporal</label>
-                  <input type="password" name="password" required minLength={6} placeholder="Mínimo 6 caracteres" className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] shadow-inner transition-all" />
+                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Contraseña temporal
+                  <input type="password" name="password" required minLength={6} placeholder="Mínimo 6 caracteres" className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] shadow-inner transition-all" /></label>
                 </div>
               </div>
               <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
@@ -312,7 +312,7 @@ export default function UsuariosPage() {
       {/* MODAL 2: EDITAR ROL */}
       {isEditModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setIsEditModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setIsEditModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-slate-100 bg-slate-50">
               <h2 className="text-xl font-bold text-[#0B172A]">Editar Usuario</h2>
@@ -348,7 +348,7 @@ export default function UsuariosPage() {
       {/* MODAL 3: ELIMINAR USUARIO */}
       {isDeleteModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setIsDeleteModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setIsDeleteModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-md bg-white border border-red-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-red-100 bg-red-50">
               <div className="flex items-center gap-3 text-red-600 mb-2">

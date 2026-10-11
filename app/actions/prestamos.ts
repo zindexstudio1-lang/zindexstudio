@@ -23,8 +23,8 @@ export async function registrarPrestamo(formData: FormData) {
     if (!adminId || !nombreCliente || !documento || !fechaDesembolsoStr) {
       return { error: "Todos los campos de identidad y fechas son completamente obligatorios." };
     }
-    if (isNaN(montoCapital) || montoCapital <= 0) return { error: "Monto inválido." };
-    if (isNaN(tasaInteres) || tasaInteres < 0) return { error: "Tasa inválida." };
+    if (Number.isNaN(montoCapital) || montoCapital <= 0) return { error: "Monto inválido." };
+    if (Number.isNaN(tasaInteres) || tasaInteres < 0) return { error: "Tasa inválida." };
 
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,8 +50,8 @@ export async function registrarPrestamo(formData: FormData) {
       plazoNum = diasExactos; 
       fechaPagoCuota = d2;
     } else {
-      plazoNum = parseInt(formData.get("plazo") as string);
-      if (isNaN(plazoNum) || plazoNum <= 0) return { error: "Plazo en meses inválido." };
+      plazoNum = Number.parseInt(formData.get("plazo") as string);
+      if (Number.isNaN(plazoNum) || plazoNum <= 0) return { error: "Plazo en meses inválido." };
     }
 
     let clienteId = "";
@@ -76,7 +76,7 @@ export async function registrarPrestamo(formData: FormData) {
       estado: 'activo',
       tipo_fondeo: tipoFondeo,
       inversionista_id: inversionistaId,
-      tasa_inversionista: isNaN(tasaInversionista) ? null : tasaInversionista
+      tasa_inversionista: Number.isNaN(tasaInversionista) ? null : tasaInversionista
     }).select().single();
       
     if (prestamoError) throw new Error("Error al crear Contrato: " + prestamoError.message);

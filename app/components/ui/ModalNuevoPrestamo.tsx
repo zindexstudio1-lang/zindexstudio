@@ -59,7 +59,7 @@ export default function ModalNuevoPrestamo({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isLoading && onClose()}></div>
+      <button type="button" className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isLoading && onClose()}></button>
       <div className="relative z-10 w-full max-w-3xl bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
         <div className="p-6 border-b border-zinc-800 bg-zinc-950/40">
           <h2 className="text-xl font-bold text-white">Estructuración de Nuevo Crédito</h2>
@@ -72,16 +72,16 @@ export default function ModalNuevoPrestamo({
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider border-b border-zinc-800/60 pb-1">Datos Identatarios del Cliente</h3>
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Nombre Completo</label>
-                <input type="text" name="nombre" required placeholder="Ej. Juan Pérez" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
+                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Nombre Completo
+                <input type="text" name="nombre" required placeholder="Ej. Juan Pérez" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" /> </label>
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5">DNI / RUC</label>
-                <input type="text" name="documento" required placeholder="Ej. 74839201" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
+                <label className="block text-xs font-medium text-zinc-400 mb-1.5">DNI / RUC
+                <input type="text" name="documento" required placeholder="Ej. 74839201" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" /></label>
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Teléfono</label>
-                <input type="text" name="telefono" placeholder="Ej. 987654321" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
+                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Teléfono
+                <input type="text" name="telefono" placeholder="Ej. 987654321" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" /></label>
               </div>
             </div>
 
@@ -110,8 +110,8 @@ export default function ModalNuevoPrestamo({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tasa a Pagar (%)</label>
-                      <input type="number" name="tasa_inversionista" step="0.01" required defaultValue="10" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white outline-none focus:border-indigo-500" />
+                      <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tasa a Pagar (%)
+                      <input type="number" name="tasa_inversionista" step="0.01" required defaultValue="10" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-white outline-none focus:border-indigo-500" /></label>
                     </div>
                   </div>
                 )}
@@ -119,12 +119,12 @@ export default function ModalNuevoPrestamo({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1.5">Capital</label>
-                  <input type="number" name="monto_capital" step="0.01" required placeholder="0.00" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
+                  <label className="block text-xs font-medium text-zinc-400 mb-1.5">Capital
+                  <input type="number" name="monto_capital" step="0.01" required placeholder="0.00" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" /></label>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tasa (%)</label>
-                  <input type="number" name="tasa_interes" step="0.01" required placeholder="0.00" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" />
+                  <label className="block text-xs font-medium text-zinc-400 mb-1.5">Tasa (%)
+                  <input type="number" name="tasa_interes" step="0.01" required placeholder="0.00" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500" /></label>
                 </div>
               </div>
 
@@ -139,20 +139,20 @@ export default function ModalNuevoPrestamo({
                 
                 {tipoPlazoFormulario === 'dias' ? (
                   <div className="animate-in fade-in zoom-in duration-200">
-                    <label className="block text-xs font-bold text-amber-400 mb-1.5">Fecha Límite Pago</label>
-                    <input type="date" name="fecha_limite" required className="w-full px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-400 outline-none focus:border-amber-500 uppercase" />
+                    <label className="block text-xs font-bold text-amber-400 mb-1.5">Fecha Límite Pago
+                    <input type="date" name="fecha_limite" required className="w-full px-3 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-400 outline-none focus:border-amber-500 uppercase" /></label>
                   </div>
                 ) : (
                   <div className="animate-in fade-in zoom-in duration-200">
-                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">Plazo (Meses)</label>
-                    <input type="number" name="plazo" required placeholder="Ej. 4" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors" />
+                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">Plazo (Meses)
+                    <input type="number" name="plazo" required placeholder="Ej. 4" className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors" /></label>
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Fecha Oficial de Desembolso</label>
-                <input type="date" name="fecha_desembolso" required className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors uppercase text-xs" />
+                <label className="block text-xs font-medium text-zinc-400 mb-1.5">Fecha Oficial de Desembolso
+                <input type="date" name="fecha_desembolso" required className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-sm text-white outline-none focus:border-indigo-500 transition-colors uppercase text-xs" /></label>
               </div>
             </div>
           </div>

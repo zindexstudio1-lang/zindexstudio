@@ -64,7 +64,7 @@ export default function DashboardLayout({
       </div>
 
       {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsSidebarOpen(false)} />
+        <button type="button" className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" onClick={() => setIsSidebarOpen(false)} />
       )}
 
       {/* Menú Lateral */}

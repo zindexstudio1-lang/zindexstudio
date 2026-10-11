@@ -216,12 +216,12 @@ Guarda este enlace para consultar tus cuotas cuando lo necesites.`);
                 {/* CAJAS CON ANCHOS PORCENTUALES ESTRICTOS */}
                 <div className="w-full pt-8 border-t border-slate-100 block md:flex md:flex-row md:justify-between">
                   <div className="w-full md:w-[48%] mb-6 md:mb-0">
-                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Alias a Mostrar</label>
-                    <input type="text" required value={nombre} onChange={(e) => setNombre(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner font-medium" />
+                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Alias a Mostrar
+                    <input type="text" required value={nombre} onChange={(e) => setNombre(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner font-medium" /></label>
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Correo (Solo Lectura)</label>
-                    <input type="email" disabled value={correo} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed shadow-inner" />
+                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Correo (Solo Lectura)
+                    <input type="email" disabled value={correo} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed shadow-inner" /></label>
                   </div>
                 </div>
                 
@@ -258,32 +258,32 @@ Guarda este enlace para consultar tus cuotas cuando lo necesites.`);
                 </div>
                 <div className="p-6 md:p-8 space-y-8">
                   <div>
-                    <label className="block text-xs font-bold text-[#C5A059] mb-3 uppercase">1. Mensaje Preventivo (Aviso previo)</label>
-                    <textarea rows={3} value={msgPreventivo} onChange={(e) => setMsgPreventivo(e.target.value)} className="w-full px-4 py-4 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] resize-none shadow-inner" />
+                    <label className="block text-xs font-bold text-[#C5A059] mb-3 uppercase">1. Mensaje Preventivo (Aviso previo)
+                    <textarea rows={3} value={msgPreventivo} onChange={(e) => setMsgPreventivo(e.target.value)} className="w-full px-4 py-4 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] resize-none shadow-inner" /></label>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-orange-500 mb-3 uppercase">2. Mensaje de Vencimiento (El mismo día)</label>
-                    <textarea rows={3} value={msgHoy} onChange={(e) => setMsgHoy(e.target.value)} className="w-full px-4 py-4 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-none shadow-inner" />
+                    <label className="block text-xs font-bold text-orange-500 mb-3 uppercase">2. Mensaje de Vencimiento (El mismo día)
+                    <textarea rows={3} value={msgHoy} onChange={(e) => setMsgHoy(e.target.value)} className="w-full px-4 py-4 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-none shadow-inner" /></label>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-red-500 mb-3 uppercase">3. Mensaje de Mora (Días atrasados)</label>
-                    <textarea rows={3} value={msgMora} onChange={(e) => setMsgMora(e.target.value)} className="w-full px-4 py-4 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 resize-none shadow-inner" />
+                    <label className="block text-xs font-bold text-red-500 mb-3 uppercase">3. Mensaje de Mora (Días atrasados)
+                    <textarea rows={3} value={msgMora} onChange={(e) => setMsgMora(e.target.value)} className="w-full px-4 py-4 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 resize-none shadow-inner" /></label>
                   </div>
 
                   <div className="pt-6 border-t border-slate-200">
                     <h3 className="text-sm font-bold text-[#0B172A] uppercase tracking-wider mb-4">Mensajes Operativos (Inicio de Crédito)</h3>
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">A. Envío de Simulación</label>
-                        <textarea rows={2} value={msgSimulacion} onChange={(e) => setMsgSimulacion(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#0B172A] focus:ring-1 focus:ring-[#0B172A] resize-none shadow-inner" />
+                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">A. Envío de Simulación
+                        <textarea rows={2} value={msgSimulacion} onChange={(e) => setMsgSimulacion(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#0B172A] focus:ring-1 focus:ring-[#0B172A] resize-none shadow-inner" /></label>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">B. Envío de Políticas</label>
-                        <textarea rows={2} value={msgPoliticas} onChange={(e) => setMsgPoliticas(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#0B172A] focus:ring-1 focus:ring-[#0B172A] resize-none shadow-inner" />
+                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">B. Envío de Políticas
+                        <textarea rows={2} value={msgPoliticas} onChange={(e) => setMsgPoliticas(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#0B172A] focus:ring-1 focus:ring-[#0B172A] resize-none shadow-inner" /></label>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">C. Envío del Cronograma (Link)</label>
-                        <textarea rows={2} value={msgCronograma} onChange={(e) => setMsgCronograma(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#0B172A] focus:ring-1 focus:ring-[#0B172A] resize-none shadow-inner" />
+                        <label className="block text-xs font-bold text-slate-500 mb-2 uppercase">C. Envío del Cronograma (Link)
+                        <textarea rows={2} value={msgCronograma} onChange={(e) => setMsgCronograma(e.target.value)} className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 outline-none focus:border-[#0B172A] focus:ring-1 focus:ring-[#0B172A] resize-none shadow-inner" /></label>
                       </div>
                     </div>
                   </div>
@@ -310,12 +310,12 @@ Guarda este enlace para consultar tus cuotas cuando lo necesites.`);
                 {/* INPUTS A PRUEBA DE BALAS */}
                 <div className="w-full block md:flex md:flex-row md:justify-between">
                   <div className="w-full md:w-[48%] mb-6 md:mb-0">
-                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Nueva Contraseña</label>
-                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••••" className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner" />
+                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Nueva Contraseña
+                    <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••••" className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner" /></label>
                   </div>
                   <div className="w-full md:w-[48%]">
-                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Confirmar Contraseña</label>
-                    <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••••••" className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner" />
+                    <label className="block text-xs font-bold text-slate-600 mb-3 uppercase tracking-wider">Confirmar Contraseña
+                    <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••••••" className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner" /></label>
                   </div>
                 </div>
 

@@ -520,7 +520,7 @@ export default function InversionistasPage() {
       {/* MODAL NUEVO FONDEO (Modo Claro) */}
       {isNewLoanModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isCreating && setIsNewLoanModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isCreating && setIsNewLoanModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-3xl bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-slate-200 bg-slate-50">
               <h2 className="text-xl font-bold text-[#0B172A]">Estructurar Nuevo Fondeo</h2>
@@ -534,16 +534,16 @@ export default function InversionistasPage() {
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-[#C5A059] uppercase tracking-wider border-b border-slate-200 pb-1">Datos del Cliente Final</h3>
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Nombre Completo</label>
-                    <input type="text" name="nombre" required placeholder="Ej. César Gómez" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" />
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Nombre Completo
+                    <input type="text" name="nombre" required placeholder="Ej. César Gómez" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" /></label>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Documento de Identidad</label>
-                    <input type="text" name="documento" required placeholder="Ej. 74839201" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" />
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Documento de Identidad
+                    <input type="text" name="documento" required placeholder="Ej. 74839201" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" /></label>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Teléfono de Contacto</label>
-                    <input type="text" name="telefono" placeholder="Ej. 987654321" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" />
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Teléfono de Contacto
+                    <input type="text" name="telefono" placeholder="Ej. 987654321" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" /></label>
                   </div>
                 </div>
 
@@ -570,12 +570,12 @@ export default function InversionistasPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-600 mb-1.5">Tasa Global (Calle)</label>
-                      <input type="number" name="tasa_interes" step="0.01" required placeholder="Ej. 20" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" />
+                      <label className="block text-xs font-bold text-slate-600 mb-1.5">Tasa Global (Calle)
+                      <input type="number" name="tasa_interes" step="0.01" required placeholder="Ej. 20" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" /></label>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-[#0B172A] mb-1.5">Mi Tasa (Neta)</label>
-                      <input type="number" name="tasa_inversionista" step="0.01" required placeholder="Ej. 10" className="w-full px-3 py-2 bg-white border border-[#C5A059]/50 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" />
+                      <label className="block text-xs font-bold text-[#0B172A] mb-1.5">Mi Tasa (Neta)
+                      <input type="number" name="tasa_inversionista" step="0.01" required placeholder="Ej. 10" className="w-full px-3 py-2 bg-white border border-[#C5A059]/50 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" /></label>
                     </div>
                   </div>
 
@@ -589,20 +589,20 @@ export default function InversionistasPage() {
                     </div>
                     {tipoPlazoFormulario === 'dias' ? (
                       <div className="animate-in fade-in zoom-in duration-200">
-                        <label className="block text-xs font-bold text-amber-600 mb-1.5">Fecha Límite Pago</label>
-                        <input type="date" name="fecha_limite" required className="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg text-xs text-[#0B172A] outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 uppercase" />
+                        <label className="block text-xs font-bold text-amber-600 mb-1.5">Fecha Límite Pago
+                        <input type="date" name="fecha_limite" required className="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg text-xs text-[#0B172A] outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 uppercase" /></label>
                       </div>
                     ) : (
                       <div className="animate-in fade-in zoom-in duration-200">
-                        <label className="block text-xs font-bold text-slate-600 mb-1.5">Plazo (Meses)</label>
-                        <input type="number" name="plazo" required placeholder="Ej. 4" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" />
+                        <label className="block text-xs font-bold text-slate-600 mb-1.5">Plazo (Meses)
+                        <input type="number" name="plazo" required placeholder="Ej. 4" className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-colors" /></label>
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Oficial de Desembolso</label>
-                    <input type="date" name="fecha_desembolso" required className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] uppercase" />
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Oficial de Desembolso
+                    <input type="date" name="fecha_desembolso" required className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] uppercase" /></label>
                   </div>
                 </div>
               </div>
@@ -621,7 +621,7 @@ export default function InversionistasPage() {
       {/* ADVERTENCIA DE ERROR */}
       {isErrorModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsErrorModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsErrorModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-md bg-white border border-red-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-red-100 bg-red-50"><h2 className="text-lg font-bold text-red-600">Error</h2></div>
             <div className="p-6 text-sm text-slate-700">{errorMessage}</div>
@@ -782,8 +782,8 @@ export default function InversionistasPage() {
 
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Real de Recepción en Cuenta</label>
-                    <input type="date" name="fecha_pago_real" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" />
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Real de Recepción en Cuenta
+                    <input type="date" name="fecha_pago_real" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" /></label>
                   </div>
                 </div>
               </div>
@@ -802,7 +802,7 @@ export default function InversionistasPage() {
       {/* MODAL EDITAR PAGO */}
       {isEditPagoModalOpen && cuotaToEdit && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsEditPagoModalOpen(false)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isProcessingPago && setIsEditPagoModalOpen(false)}></button>
           <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xl">
             <div className="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -835,8 +835,8 @@ export default function InversionistasPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="fecha_pago_real" className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Real de Ingreso</label>
-                  <input id="fecha_pago_real" type="date" name="fecha_pago_real" required title="Fecha Real de Ingreso" defaultValue={cuotaToEdit.fecha_pago_real || ''} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" />
+                  <label htmlFor="fecha_pago_real" className="block text-xs font-bold text-slate-600 mb-1.5">Fecha Real de Ingreso
+                  <input id="fecha_pago_real" type="date" name="fecha_pago_real" required title="Fecha Real de Ingreso" defaultValue={cuotaToEdit.fecha_pago_real || ''} className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-[#0B172A] outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]" /></label>
                 </div>
               </div>
               <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
@@ -851,7 +851,7 @@ export default function InversionistasPage() {
       {/* MODAL DESHACER PAGO */}
       {cuotaToUndo && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setCuotaToUndo(null)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setCuotaToUndo(null)}></button>
           <div className="relative z-10 w-full max-w-sm bg-white border border-amber-200 rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="p-6 text-center space-y-4">
               <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2 border border-amber-100">
@@ -877,7 +877,7 @@ export default function InversionistasPage() {
       {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
       {prestamoToDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPrestamoToDelete(null)}></div>
+          <button type="button" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPrestamoToDelete(null)}></button>
           <div className="relative z-10 w-full max-w-sm bg-white border border-red-200 rounded-2xl p-6 shadow-2xl animate-in zoom-in-95">
             <h2 className="text-xl font-bold text-[#0B172A] mb-2">¿Eliminar Contrato?</h2>
             <p className="text-sm text-slate-500 mb-6">Esta acción borrará el préstamo y sus cuotas de la auditoría. Es irreversible.</p>
